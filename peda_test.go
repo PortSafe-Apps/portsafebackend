@@ -10,7 +10,7 @@ import (
 )
 
 func TestGeneratePasswordHash(t *testing.T) {
-	password := "secret"
+	password := "bismillah"
 	hash, _ := HashPassword(password) // ignore error for the sake of simplicity
 
 	fmt.Println("Password:", password)
@@ -23,15 +23,15 @@ func TestGeneratePrivateKeyPaseto(t *testing.T) {
 	privateKey, publicKey := watoken.GenerateKey()
 	fmt.Println(privateKey)
 	fmt.Println(publicKey)
-	hasil, err := watoken.Encode("petped", privateKey)
+	hasil, err := watoken.Encode("aku", privateKey)
 	fmt.Println(hasil, err)
 }
 
 func TestHashFunction(t *testing.T) {
 	mconn := SetConnection("MONGOULBI", "petapedia")
 	var userdata User
-	userdata.Username = "petped"
-	userdata.Password = "secret"
+	userdata.Username = "aku"
+	userdata.Password = "bismillah"
 
 	filter := bson.M{"username": userdata.Username}
 	res := atdb.GetOneDoc[User](mconn, "user", filter)
