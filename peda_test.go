@@ -10,7 +10,7 @@ import (
 )
 
 func TestGeneratePasswordHash(t *testing.T) {
-	password := "bismillah"
+	password := "secret"
 	hash, _ := HashPassword(password) // ignore error for the sake of simplicity
 
 	fmt.Println("Password:", password)
@@ -28,10 +28,10 @@ func TestGeneratePrivateKeyPaseto(t *testing.T) {
 }
 
 func TestHashFunction(t *testing.T) {
-	mconn := SetConnection("MONGOULBI", "petapedia")
+	mconn := SetConnection("MONGOULBI", "portsafedb")
 	var userdata User
-	userdata.Username = "aku"
-	userdata.Password = "bismillah"
+	userdata.Username = "petped"
+	userdata.Password = "secret"
 
 	filter := bson.M{"username": userdata.Username}
 	res := atdb.GetOneDoc[User](mconn, "user", filter)
@@ -43,18 +43,17 @@ func TestHashFunction(t *testing.T) {
 
 }
 
-func TestIsPasswordValid(t *testing.T) {
-	mconn := SetConnection("MONGOULBI", "petapedia")
+func TestLoginn(t *testing.T) {
+	mconn := SetConnection("MONGOULBI", "portsafedb")
 	var userdata User
 	userdata.Username = "petped"
 	userdata.Password = "secret"
-
-	anu := IsPasswordValid(mconn, "user", userdata)
-	fmt.Println(anu)
+	IsPasswordValid(mconn, "user", userdata)
+	fmt.Println(userdata)
 }
 
 func TestAllUser(t *testing.T) {
-	mconn := SetConnection("MONGOULBI", "petapedia")
+	mconn := SetConnection("MONGOULBI", "portsafedb")
 	user := GCFGetHandle(mconn, "user")
 	fmt.Println(user)
 }

@@ -1,6 +1,7 @@
 package port
 
 import (
+	"context"
 	"os"
 
 	"github.com/aiteung/atdb"
@@ -25,4 +26,18 @@ func IsPasswordValid(mongoconn *mongo.Database, collection string, userdata User
 	filter := bson.M{"username": userdata.Username}
 	res := atdb.GetOneDoc[User](mongoconn, collection, filter)
 	return CheckPasswordHash(userdata.Password, res.Password)
+}
+
+func IsPasswordValidd(mconn *mongo.Database, collection string, userdata User) (User, bool) {
+	filter := bson.M{"username": userdata.Username}
+	var foundUser User
+	err := mconn.Collection(collection).FindOne(context.Background(), filter).Decode(&foundUser)
+	if err != nil {
+		return User{}, false
+	}
+	// Verify password here
+	if CheckPasswordHash(userdata.Password, foundUser.Password) {
+		return foundUser, true
+	}
+	return User{}, false
 }
