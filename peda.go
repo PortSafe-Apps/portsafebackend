@@ -55,7 +55,6 @@ func GCFLoginTest(username, password, MONGOCONNSTRINGENV, dbname, collectionname
 	if res == (User{}) {
 		return false
 	}
-
 	// Memeriksa apakah kata sandi cocok
 	return CheckPasswordHash(password, res.Password)
 }
