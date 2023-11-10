@@ -68,7 +68,7 @@ func GCFLoginFixx(MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Req
 			"Username": userdata.Username,
 			"Password": userdata.Password,
 			"Private":  userdata.Private,
-			"Publick":  userdata.Public,
+			"Public":   userdata.Public,
 		}
 		response := CreateResponse(true, "Berhasil Login", userMap)
 		return GCFReturnStruct(response) // Return GCFReturnStruct directly
