@@ -42,46 +42,12 @@ func TestHashFunction(t *testing.T) {
 	fmt.Println("Match:   ", match)
 
 }
-func TestCreateNewUserRole(t *testing.T) {
-	var userdata User
-	userdata.Username = "raulmahya"
-	userdata.Password = "banget"
-	userdata.Role = "admin"
-	mconn := SetConnection("MONGOULBI", "portsafedb")
-	CreateNewUserRole(mconn, "user", userdata)
-}
 
 func TestDeleteUser(t *testing.T) {
 	mconn := SetConnection("MONGOULBI", "portsafedb")
 	var userdata User
 	userdata.Username = "yyy"
 	DeleteUser(mconn, "user", userdata)
-}
-
-func CreateNewUserToken(t *testing.T) {
-	var userdata User
-	userdata.Username = "raulmahya"
-	userdata.Password = "banget"
-	userdata.Role = "admin"
-
-	// Create a MongoDB connection
-	mconn := SetConnection("MONGOULBI", "portsafedb")
-
-	// Call the function to create a user and generate a token
-	err := CreateUserAndAddToken("your_private_key_env", mconn, "user", userdata)
-
-	if err != nil {
-		t.Errorf("Error creating user and token: %v", err)
-	}
-}
-
-func TestGFCPostHandlerUser(t *testing.T) {
-	mconn := SetConnection("MONGOULBI", "portsafedb")
-	var userdata User
-	userdata.Username = "raulmahya"
-	userdata.Password = "banget"
-	userdata.Role = "admin"
-	CreateNewUserRole(mconn, "user", userdata)
 }
 
 func TestUserFix(t *testing.T) {
