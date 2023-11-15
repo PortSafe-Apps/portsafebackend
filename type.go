@@ -17,6 +17,10 @@ type User struct {
 	Public   string `json:"public,omitempty" bson:"public,omitempty"`
 }
 
+type UserRole struct {
+	Role string `json:"role"`
+}
+
 type Payload struct {
 	User string    `json:"user"`
 	Role string    `json:"role"`

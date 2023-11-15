@@ -1,12 +1,14 @@
 package port
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"os"
 
 	"github.com/whatsauth/watoken"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 func GCFGetHandler(MONGOCONNSTRINGENV, dbname, collectionname string) string {
@@ -74,6 +76,17 @@ func GCFCreateRegister(MONGOCONNSTRINGENV, dbname, collectionname string, r *htt
 	return GCFReturnStruct(userdata)
 }
 
+func GetUser(mongoconn *mongo.Database, collection string, username string) (User, error) {
+	filter := bson.M{"username": username}
+	var foundUser User
+	err := mongoconn.Collection(collection).FindOne(context.Background(), filter).Decode(&foundUser)
+	if err != nil {
+		return User{}, err
+	}
+
+	return foundUser, nil
+}
+
 func GCFLogin(MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
 	mconn := SetConnection(MONGOCONNSTRINGENV, dbname)
 	var userdata User
@@ -82,16 +95,44 @@ func GCFLogin(MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request
 		return err.Error()
 	}
 
-	if IsPasswordValid(mconn, collectionname, userdata) {
+	isValid := IsPasswordValid(mconn, collectionname, userdata)
+	if isValid {
 		// Password is valid, construct and return the GCFReturnStruct.
-		userMap := map[string]interface{}{
-			"Username": userdata.Username,
-			"Password": userdata.Password,
-			"Private":  userdata.Private,
-			"Public":   userdata.Public,
+		var response string
+
+		foundUser, err := GetUser(mconn, collectionname, userdata.Username)
+		if err != nil {
+			return "Gagal mendapatkan data pengguna"
 		}
-		response := CreateResponse(true, "Berhasil Login", userMap)
-		return GCFReturnStruct(response) // Return GCFReturnStruct directly
+
+		// Set default value for Role if empty
+		if foundUser.Role == "" {
+			foundUser.Role = "user"
+		}
+
+		switch foundUser.Role {
+		case "admin":
+			// Admin login logic
+			adminMap := map[string]interface{}{
+				"Username": foundUser.Username,
+				"Role":     "admin",
+				// Add other admin-specific data if needed
+			}
+			response = GCFReturnStruct(CreateResponse(true, "Admin berhasil login", adminMap))
+		case "user":
+			// User login logic
+			userMap := map[string]interface{}{
+				"Username": foundUser.Username,
+				"Role":     "user",
+				// Add other user-specific data if needed
+			}
+			response = GCFReturnStruct(CreateResponse(true, "User berhasil login", userMap))
+		default:
+			// Unknown role
+			response = GCFReturnStruct(CreateResponse(false, "Peran tidak dikenal", nil))
+		}
+
+		return response
 	} else {
 		// Password is not valid, return an error message.
 		return "Password Salah"
