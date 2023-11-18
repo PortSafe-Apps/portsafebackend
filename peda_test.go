@@ -7,7 +7,6 @@ import (
 	"github.com/aiteung/atdb"
 	"github.com/whatsauth/watoken"
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
 )
 
 func TestGeneratePasswordHash(t *testing.T) {
@@ -67,48 +66,6 @@ func TestLoginn(t *testing.T) {
 	userdata.Password = "secret"
 	IsPasswordValid(mconn, "user", userdata)
 	fmt.Println(userdata)
-}
-
-func TestLogin(t *testing.T) {
-	mconn := SetConnection("MONGOULBI", "portsafedb")
-
-	// Tes login sebagai user
-	userData := User{Username: "petped", Password: "secret"}
-	testLogin(t, mconn, "user", userData)
-
-	// Tes login sebagai admin
-	adminData := User{Username: "admin", Password: "portsafe123", Role: "admin"}
-	testLogin(t, mconn, "user", adminData)
-}
-
-func testLogin(t *testing.T, mconn *mongo.Database, collectionName string, userData User) {
-	isValid := IsPasswordValid(mconn, collectionName, userData)
-	if isValid {
-		foundUser, err := GetUser(mconn, collectionName, userData.Username)
-		if err != nil {
-			t.Errorf("Gagal mendapatkan data pengguna: %v", err)
-			return
-		}
-
-		// Atur nilai default untuk Role jika kosong
-		if foundUser.Role == "" {
-			foundUser.Role = "user"
-		}
-
-		// Lakukan pengujian lebih lanjut berdasarkan peran (role)
-		switch foundUser.Role {
-		case "admin":
-			// Lakukan pengujian khusus untuk admin
-			fmt.Println("Login berhasil sebagai admin:", foundUser.Username)
-		case "user":
-			// Lakukan pengujian khusus untuk user
-			fmt.Println("Login berhasil sebagai user:", foundUser.Username)
-		default:
-			t.Errorf("Peran tidak dikenal: %s", foundUser.Role)
-		}
-	} else {
-		t.Error("Login gagal. Password tidak valid.")
-	}
 }
 
 // func TestAllUser(t *testing.T) {

@@ -115,3 +115,28 @@ func FindUserByUsername(mongoconn *mongo.Database, collection string, username s
 	}
 	return user, nil
 }
+
+// reporting function
+func CreateReporting(mongoconn *mongo.Database, collection string, reportingdata Reporting) interface{} {
+	return atdb.InsertOneDoc(mongoconn, collection, reportingdata)
+}
+
+func DeleteReporting(mongoconn *mongo.Database, collection string, reportingdata Reporting) interface{} {
+	filter := bson.M{"id": reportingdata.ID}
+	return atdb.DeleteOneDoc(mongoconn, collection, filter)
+}
+
+func UpdatedReporting(mongoconn *mongo.Database, collection string, filter bson.M, reportingdata Reporting) interface{} {
+	filter = bson.M{"id": reportingdata.ID}
+	return atdb.ReplaceOneDoc(mongoconn, collection, filter, reportingdata)
+}
+
+func GetAllReporting(mongoconn *mongo.Database, collection string) []Reporting {
+	reporting := atdb.GetAllDoc[[]Reporting](mongoconn, collection)
+	return reporting
+}
+
+func GetIDReporting(mongoconn *mongo.Database, collection string, reportingdata Reporting) Reporting {
+	filter := bson.M{"id": reportingdata.ID}
+	return atdb.GetOneDoc[Reporting](mongoconn, collection, filter)
+}

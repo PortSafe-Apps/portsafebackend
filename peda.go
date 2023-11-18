@@ -164,6 +164,7 @@ func GCFFindUserByName(MONGOCONNSTRINGENV, dbname, collectionname string, r *htt
 	return "false"
 }
 
+// function
 func GCFFindUserByID(MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
 	mconn := SetConnection(MONGOCONNSTRINGENV, dbname)
 	var datauser User
@@ -173,6 +174,88 @@ func GCFFindUserByID(MONGOCONNSTRINGENV, dbname, collectionname string, r *http.
 	}
 	user := FindUser(mconn, collectionname, datauser)
 	return GCFReturnStruct(user)
+}
+
+// <--- Reporting --->
+
+// comment post
+func GCFCreateReporting(MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
+	mconn := SetConnection(MONGOCONNSTRINGENV, dbname)
+
+	var reportingdata Reporting
+	err := json.NewDecoder(r.Body).Decode(&reportingdata)
+	if err != nil {
+		return err.Error()
+	}
+
+	if err := CreateReporting(mconn, collectionname, reportingdata); err != nil {
+		return GCFReturnStruct(CreateResponse(true, "Success Create Reporting", reportingdata))
+	} else {
+		return GCFReturnStruct(CreateResponse(false, "Failed Create Reporting", reportingdata))
+	}
+}
+
+// delete reporting
+func GCFDeleteReporting(MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
+	mconn := SetConnection(MONGOCONNSTRINGENV, dbname)
+
+	var reportingdata Reporting
+	err := json.NewDecoder(r.Body).Decode(&reportingdata)
+	if err != nil {
+		return err.Error()
+	}
+
+	if err := DeleteReporting(mconn, collectionname, reportingdata); err != nil {
+		return GCFReturnStruct(CreateResponse(true, "Success Delete Reporting", reportingdata))
+	} else {
+		return GCFReturnStruct(CreateResponse(false, "Failed Delete Reporting", reportingdata))
+	}
+}
+
+// update reporting
+func GCFUpdateReporting(MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
+	mconn := SetConnection(MONGOCONNSTRINGENV, dbname)
+
+	var reportingdata Reporting
+	err := json.NewDecoder(r.Body).Decode(&reportingdata)
+	if err != nil {
+		return err.Error()
+	}
+
+	if err := UpdatedReporting(mconn, collectionname, bson.M{"id": reportingdata.ID}, reportingdata); err != nil {
+		return GCFReturnStruct(CreateResponse(true, "Success Update Reporting", reportingdata))
+	} else {
+		return GCFReturnStruct(CreateResponse(false, "Failed Update Reporting", reportingdata))
+	}
+}
+
+// get all reporting
+func GCFGetAllReporting(MONGOCONNSTRINGENV, dbname, collectionname string) string {
+	mconn := SetConnection(MONGOCONNSTRINGENV, dbname)
+	reportingdata := GetAllReporting(mconn, collectionname)
+	if reportingdata != nil {
+		return GCFReturnStruct(CreateResponse(true, "success Get All Reporting", reportingdata))
+	} else {
+		return GCFReturnStruct(CreateResponse(false, "Failed Get All Reporting", reportingdata))
+	}
+}
+
+// get all reporting by id
+func GCFGetAllReportingID(MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
+	mconn := SetConnection(MONGOCONNSTRINGENV, dbname)
+
+	var reportingdata Reporting
+	err := json.NewDecoder(r.Body).Decode(&reportingdata)
+	if err != nil {
+		return err.Error()
+	}
+
+	reporting := GetIDReporting(mconn, collectionname, reportingdata)
+	if reporting != (Reporting{}) {
+		return GCFReturnStruct(CreateResponse(true, "Success: Get ID Reporting", reportingdata))
+	} else {
+		return GCFReturnStruct(CreateResponse(false, "Failed to Get ID Reporting", reportingdata))
+	}
 }
 
 func GCFReturnStruct(DataStuct any) string {
