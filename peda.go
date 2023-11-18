@@ -178,84 +178,87 @@ func GCFFindUserByID(MONGOCONNSTRINGENV, dbname, collectionname string, r *http.
 
 // <--- Reporting --->
 
-// comment post
-func GCFCreateReporting(MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
+// report post
+func GCFCreateReport(MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
 	mconn := SetConnection(MONGOCONNSTRINGENV, dbname)
 
-	var reportingdata Reporting
-	err := json.NewDecoder(r.Body).Decode(&reportingdata)
+	var datareport Report
+	err := json.NewDecoder(r.Body).Decode(&datareport)
 	if err != nil {
 		return err.Error()
 	}
 
-	if err := CreateReporting(mconn, collectionname, reportingdata); err != nil {
-		return GCFReturnStruct(CreateResponse(true, "Success Create Reporting", reportingdata))
+	if err := CreateReport(mconn, collectionname, datareport); err != nil {
+		return GCFReturnStruct(CreateResponse(true, "Success Create Reporting", datareport))
 	} else {
-		return GCFReturnStruct(CreateResponse(false, "Failed Create Reporting", reportingdata))
+		return GCFReturnStruct(CreateResponse(false, "Failed Create Reporting", datareport))
 	}
 }
 
-// delete reporting
-func GCFDeleteReporting(MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
+// delete report
+func GCFDeleteReport(MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
 	mconn := SetConnection(MONGOCONNSTRINGENV, dbname)
 
-	var reportingdata Reporting
-	err := json.NewDecoder(r.Body).Decode(&reportingdata)
+	var datareport Report
+	err := json.NewDecoder(r.Body).Decode(&datareport)
 	if err != nil {
 		return err.Error()
 	}
 
-	if err := DeleteReporting(mconn, collectionname, reportingdata); err != nil {
-		return GCFReturnStruct(CreateResponse(true, "Success Delete Reporting", reportingdata))
+	if err := DeleteReport(mconn, collectionname, datareport); err != nil {
+		return GCFReturnStruct(CreateResponse(true, "Success Delete Reporting", datareport))
 	} else {
-		return GCFReturnStruct(CreateResponse(false, "Failed Delete Reporting", reportingdata))
+		return GCFReturnStruct(CreateResponse(false, "Failed Delete Reporting", datareport))
 	}
+
 }
 
-// update reporting
-func GCFUpdateReporting(MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
+// update report
+func GCFUpdateReport(MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
 	mconn := SetConnection(MONGOCONNSTRINGENV, dbname)
 
-	var reportingdata Reporting
-	err := json.NewDecoder(r.Body).Decode(&reportingdata)
+	var datareport Report
+	err := json.NewDecoder(r.Body).Decode(&datareport)
 	if err != nil {
 		return err.Error()
 	}
 
-	if err := UpdatedReporting(mconn, collectionname, bson.M{"id": reportingdata.ID}, reportingdata); err != nil {
-		return GCFReturnStruct(CreateResponse(true, "Success Update Reporting", reportingdata))
+	if err := UpdatedReport(mconn, collectionname, bson.M{"id": datareport.ID}, datareport); err != nil {
+		return GCFReturnStruct(CreateResponse(true, "Success Update Reporting", datareport))
 	} else {
-		return GCFReturnStruct(CreateResponse(false, "Failed Update Reporting", reportingdata))
+		return GCFReturnStruct(CreateResponse(false, "Failed Update Reporting", datareport))
 	}
 }
 
-// get all reporting
-func GCFGetAllReporting(MONGOCONNSTRINGENV, dbname, collectionname string) string {
+// get all Report
+func GCFGetAllBlogg(MONGOCONNSTRINGENV, dbname, collectionname string) string {
 	mconn := SetConnection(MONGOCONNSTRINGENV, dbname)
-	reportingdata := GetAllReporting(mconn, collectionname)
-	if reportingdata != nil {
-		return GCFReturnStruct(CreateResponse(true, "success Get All Reporting", reportingdata))
+	datareport := GetAllReportAll(mconn, collectionname)
+	if datareport != nil {
+		return GCFReturnStruct(CreateResponse(true, "success Get All Blog", datareport))
 	} else {
-		return GCFReturnStruct(CreateResponse(false, "Failed Get All Reporting", reportingdata))
+		return GCFReturnStruct(CreateResponse(false, "Failed Get All Blog", datareport))
 	}
 }
 
 // get all reporting by id
-func GCFGetAllReportingID(MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
+func GCFFindBlogAllID(MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
 	mconn := SetConnection(MONGOCONNSTRINGENV, dbname)
 
-	var reportingdata Reporting
-	err := json.NewDecoder(r.Body).Decode(&reportingdata)
+	// Inisialisasi variabel datacontent
+	var datareport Report
+
+	// Membaca data JSON dari permintaan HTTP ke dalam datacontent
+	err := json.NewDecoder(r.Body).Decode(&datareport)
 	if err != nil {
 		return err.Error()
 	}
 
-	reporting := GetIDReporting(mconn, collectionname, reportingdata)
-	if reporting != (Reporting{}) {
-		return GCFReturnStruct(CreateResponse(true, "Success: Get ID Reporting", reportingdata))
-	} else {
-		return GCFReturnStruct(CreateResponse(false, "Failed to Get ID Reporting", reportingdata))
-	}
+	// Memanggil fungsi FindContentAllId
+	blog := GetIDReport(mconn, collectionname, datareport)
+
+	// Mengembalikan hasil dalam bentuk JSON
+	return GCFReturnStruct(blog)
 }
 
 func GCFReturnStruct(DataStuct any) string {

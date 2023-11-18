@@ -117,26 +117,26 @@ func FindUserByUsername(mongoconn *mongo.Database, collection string, username s
 }
 
 // reporting function
-func CreateReporting(mongoconn *mongo.Database, collection string, reportingdata Reporting) interface{} {
-	return atdb.InsertOneDoc(mongoconn, collection, reportingdata)
+func CreateReport(mongoconn *mongo.Database, collection string, reportdata Report) interface{} {
+	return atdb.InsertOneDoc(mongoconn, collection, reportdata)
 }
 
-func DeleteReporting(mongoconn *mongo.Database, collection string, reportingdata Reporting) interface{} {
-	filter := bson.M{"id": reportingdata.ID}
+func DeleteReport(mongoconn *mongo.Database, collection string, reportdata Report) interface{} {
+	filter := bson.M{"id": reportdata.ID}
 	return atdb.DeleteOneDoc(mongoconn, collection, filter)
 }
 
-func UpdatedReporting(mongoconn *mongo.Database, collection string, filter bson.M, reportingdata Reporting) interface{} {
-	filter = bson.M{"id": reportingdata.ID}
-	return atdb.ReplaceOneDoc(mongoconn, collection, filter, reportingdata)
+func UpdatedReport(mongoconn *mongo.Database, collection string, filter bson.M, reportdata Report) interface{} {
+	newFilter := bson.M{"id": reportdata.ID}
+	return atdb.ReplaceOneDoc(mongoconn, collection, newFilter, reportdata)
 }
 
-func GetAllReporting(mongoconn *mongo.Database, collection string) []Reporting {
-	reporting := atdb.GetAllDoc[[]Reporting](mongoconn, collection)
-	return reporting
+func GetAllReportAll(mongoconn *mongo.Database, collection string) []Report {
+	report := atdb.GetAllDoc[[]Report](mongoconn, collection)
+	return report
 }
 
-func GetIDReporting(mongoconn *mongo.Database, collection string, reportingdata Reporting) Reporting {
-	filter := bson.M{"id": reportingdata.ID}
-	return atdb.GetOneDoc[Reporting](mongoconn, collection, filter)
+func GetIDReport(mongoconn *mongo.Database, collection string, reportdata Report) Report {
+	filter := bson.M{"id": reportdata.ID}
+	return atdb.GetOneDoc[Report](mongoconn, collection, filter)
 }
