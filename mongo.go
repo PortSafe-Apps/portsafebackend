@@ -116,9 +116,22 @@ func FindUserByUsername(mongoconn *mongo.Database, collection string, username s
 	return user, nil
 }
 
+// // reporting function
+// func CreateReport(mongoconn *mongo.Database, collection string, reportdata Report) interface{} {
+// 	return atdb.InsertOneDoc(mongoconn, collection, reportdata)
+// }
+
 // reporting function
 func CreateReport(mongoconn *mongo.Database, collection string, reportdata Report) interface{} {
-	return atdb.InsertOneDoc(mongoconn, collection, reportdata)
+	result := atdb.InsertOneDoc(mongoconn, collection, reportdata)
+	if result.Error != nil {
+		// Tambahkan log atau pesan kesalahan ke konsol
+		fmt.Println("Error inserting data to MongoDB:", result.Error)
+		return result.Error
+	}
+
+	// Pastikan bahwa nilai yang dikembalikan sesuai dengan skema yang diharapkan oleh Swagger
+	return result.Data
 }
 
 func DeleteReport(mongoconn *mongo.Database, collection string, reportdata Report) interface{} {
