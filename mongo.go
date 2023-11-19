@@ -121,13 +121,21 @@ func FindUserByUsername(mongoconn *mongo.Database, collection string, username s
 // 	return atdb.InsertOneDoc(mongoconn, collection, reportdata)
 // }
 
-// reporting function
+// Di dalam fungsi CreateReport
 func CreateReport(mongoconn *mongo.Database, collection string, reportdata Report) interface{} {
-	result := atdb.InsertOneDoc(mongoconn, collection, reportdata)
-	if result != nil {
-		return GCFReturnStruct(CreateResponse(true, "Success Create Reporting", result))
-	}
-	return GCFReturnStruct(CreateResponse(false, "Failed Create Reporting", nil))
+    // Tambahkan pesan cetak untuk memeriksa nilai reportdata
+    fmt.Println("Creating report with data:", reportdata)
+
+    result := atdb.InsertOneDoc(mongoconn, collection, reportdata)
+    if result != nil {
+        // Tambahkan pesan cetak untuk melihat hasil penambahan dokumen
+        fmt.Println("Successfully created report:", result)
+        return GCFReturnStruct(CreateResponse(true, "Success Create Reporting", result))
+    }
+    
+    // Tambahkan pesan cetak untuk melaporkan kegagalan penambahan dokumen
+    fmt.Println("Failed to create report.")
+    return GCFReturnStruct(CreateResponse(false, "Failed Create Reporting", nil))
 }
 
 // func DeleteReport(mongoconn *mongo.Database, collection string, reportdata Report) interface{} {
