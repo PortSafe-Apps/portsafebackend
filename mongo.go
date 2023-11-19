@@ -124,24 +124,38 @@ func FindUserByUsername(mongoconn *mongo.Database, collection string, username s
 // reporting function
 func CreateReport(mongoconn *mongo.Database, collection string, reportdata Report) interface{} {
 	result := atdb.InsertOneDoc(mongoconn, collection, reportdata)
-	if result.Error != nil {
-		// Tambahkan log atau pesan kesalahan ke konsol
-		fmt.Println("Error inserting data to MongoDB:", result.Error)
-		return result.Error
+	if result != nil {
+		return GCFReturnStruct(CreateResponse(true, "Success Create Reporting", result))
 	}
-
-	// Pastikan bahwa nilai yang dikembalikan sesuai dengan skema yang diharapkan oleh Swagger
-	return result.Data
+	return GCFReturnStruct(CreateResponse(false, "Failed Create Reporting", nil))
 }
+
+// func DeleteReport(mongoconn *mongo.Database, collection string, reportdata Report) interface{} {
+// 	filter := bson.M{"id": reportdata.ID}
+// 	return atdb.DeleteOneDoc(mongoconn, collection, filter)
+// }
 
 func DeleteReport(mongoconn *mongo.Database, collection string, reportdata Report) interface{} {
 	filter := bson.M{"id": reportdata.ID}
-	return atdb.DeleteOneDoc(mongoconn, collection, filter)
+	result := atdb.DeleteOneDoc(mongoconn, collection, filter)
+	if result != nil {
+		return GCFReturnStruct(CreateResponse(true, "Success Delete Reporting", result))
+	}
+	return GCFReturnStruct(CreateResponse(false, "Failed Delete Reporting", nil))
 }
+
+// func UpdatedReport(mongoconn *mongo.Database, collection string, filter bson.M, reportdata Report) interface{} {
+// 	newFilter := bson.M{"id": reportdata.ID}
+// 	return atdb.ReplaceOneDoc(mongoconn, collection, newFilter, reportdata)
+// }
 
 func UpdatedReport(mongoconn *mongo.Database, collection string, filter bson.M, reportdata Report) interface{} {
 	newFilter := bson.M{"id": reportdata.ID}
-	return atdb.ReplaceOneDoc(mongoconn, collection, newFilter, reportdata)
+	result := atdb.ReplaceOneDoc(mongoconn, collection, newFilter, reportdata)
+	if result != nil {
+		return GCFReturnStruct(CreateResponse(true, "Success Update Reporting", result))
+	}
+	return GCFReturnStruct(CreateResponse(false, "Failed Update Reporting", nil))
 }
 
 func GetAllReportAll(mongoconn *mongo.Database, collection string) []Report {
