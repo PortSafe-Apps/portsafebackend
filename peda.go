@@ -3,6 +3,7 @@ package port
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"os"
 
@@ -179,17 +180,40 @@ func GCFFindUserByID(MONGOCONNSTRINGENV, dbname, collectionname string, r *http.
 // <--- Reporting --->
 
 // report post
+// func GCFCreateReport(MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
+// 	mconn := SetConnection(MONGOCONNSTRINGENV, dbname)
+
+// 	var datareport Report
+// 	err := json.NewDecoder(r.Body).Decode(&datareport)
+// 	if err != nil {
+// 		return err.Error()
+// 	}
+
+// 	if err := CreateReport(mconn, collectionname, datareport); err != nil {
+// 		return GCFReturnStruct(CreateResponse(true, "Success Create Reporting", datareport))
+// 	} else {
+// 		return GCFReturnStruct(CreateResponse(false, "Failed Create Reporting", datareport))
+// 	}
+// }
+
+// Di dalam fungsi GCFCreateReport
 func GCFCreateReport(MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
 	mconn := SetConnection(MONGOCONNSTRINGENV, dbname)
+	if mconn == nil {
+		return GCFReturnStruct(CreateResponse(true, "Failed to establish MongoDB connection", nil))
+	}
 
 	var datareport Report
 	err := json.NewDecoder(r.Body).Decode(&datareport)
 	if err != nil {
-		return err.Error()
+		return GCFReturnStruct(CreateResponse(true, "Failed to decode request body", nil))
 	}
 
+	// Tambahkan pesan cetak untuk memeriksa nilai datareport
+	fmt.Println("Decoded report data:", datareport)
+
 	if err := CreateReport(mconn, collectionname, datareport); err != nil {
-		return GCFReturnStruct(CreateResponse(true, "Success Create Reporting", datareport))
+		return GCFReturnStruct(CreateResponse(true, "Failed to create report", datareport))
 	} else {
 		return GCFReturnStruct(CreateResponse(false, "Failed Create Reporting", datareport))
 	}

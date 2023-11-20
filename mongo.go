@@ -116,19 +116,54 @@ func FindUserByUsername(mongoconn *mongo.Database, collection string, username s
 	return user, nil
 }
 
-// reporting function
+// // reporting function
+// func CreateReport(mongoconn *mongo.Database, collection string, reportdata Report) interface{} {
+// 	return atdb.InsertOneDoc(mongoconn, collection, reportdata)
+// }
+
+// Di dalam fungsi CreateReport
 func CreateReport(mongoconn *mongo.Database, collection string, reportdata Report) interface{} {
-	return atdb.InsertOneDoc(mongoconn, collection, reportdata)
+    // Tambahkan pesan cetak untuk memeriksa nilai reportdata
+    fmt.Println("Creating report with data:", reportdata)
+
+    result := atdb.InsertOneDoc(mongoconn, collection, reportdata)
+    if result != nil {
+        // Tambahkan pesan cetak untuk melihat hasil penambahan dokumen
+        fmt.Println("Successfully created report:", result)
+        return GCFReturnStruct(CreateResponse(true, "Success Create Reporting", result))
+    }
+    
+    // Tambahkan pesan cetak untuk melaporkan kegagalan penambahan dokumen
+    fmt.Println("Failed to create report.")
+    return GCFReturnStruct(CreateResponse(false, "Failed Create Reporting", nil))
 }
+
+// func DeleteReport(mongoconn *mongo.Database, collection string, reportdata Report) interface{} {
+// 	filter := bson.M{"id": reportdata.ID}
+// 	return atdb.DeleteOneDoc(mongoconn, collection, filter)
+// }
 
 func DeleteReport(mongoconn *mongo.Database, collection string, reportdata Report) interface{} {
 	filter := bson.M{"id": reportdata.ID}
-	return atdb.DeleteOneDoc(mongoconn, collection, filter)
+	result := atdb.DeleteOneDoc(mongoconn, collection, filter)
+	if result != nil {
+		return GCFReturnStruct(CreateResponse(true, "Success Delete Reporting", result))
+	}
+	return GCFReturnStruct(CreateResponse(false, "Failed Delete Reporting", nil))
 }
+
+// func UpdatedReport(mongoconn *mongo.Database, collection string, filter bson.M, reportdata Report) interface{} {
+// 	newFilter := bson.M{"id": reportdata.ID}
+// 	return atdb.ReplaceOneDoc(mongoconn, collection, newFilter, reportdata)
+// }
 
 func UpdatedReport(mongoconn *mongo.Database, collection string, filter bson.M, reportdata Report) interface{} {
 	newFilter := bson.M{"id": reportdata.ID}
-	return atdb.ReplaceOneDoc(mongoconn, collection, newFilter, reportdata)
+	result := atdb.ReplaceOneDoc(mongoconn, collection, newFilter, reportdata)
+	if result != nil {
+		return GCFReturnStruct(CreateResponse(true, "Success Update Reporting", result))
+	}
+	return GCFReturnStruct(CreateResponse(false, "Failed Update Reporting", nil))
 }
 
 func GetAllReportAll(mongoconn *mongo.Database, collection string) []Report {
