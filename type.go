@@ -41,9 +41,8 @@ type Response struct {
 
 type Report struct {
 	ID                 primitive.ObjectID `bson:"_id,omitempty" `
-	Reportid           int                `json:"reportid" bson:"reportid"`
+	Reportid           string             `json:"reportid" bson:"reportid"`
 	Date               string             `json:"date" bson:"date"`
-	Title              string             `json:"title" bson:"title"`
 	Supervisorid       int                `json:"supervisorid" bson:"supervisorid"`
 	SupervisorName     string             `json:"supervisorname" bson:"supervisorname"`
 	SupervisorPosition string             `json:"supervisorposition" bson:"supervisorposition"`

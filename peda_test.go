@@ -77,9 +77,8 @@ func TestLoginn(t *testing.T) {
 func TestReport(t *testing.T) {
 	mconn := SetConnection("MONGOULBI", "portsafedb")
 	var reportdata Report
-	reportdata.Reportid = 14678
+	reportdata.Reportid = "0000-K3-001"
 	reportdata.Date = "2023-11-18"
-	reportdata.Title = "Laporan Kejadian"
 	reportdata.Supervisorid = 103
 	reportdata.SupervisorName = "Budi multazam"
 	reportdata.SupervisorPosition = "Supervisor Keselamatan"
