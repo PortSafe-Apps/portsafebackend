@@ -73,3 +73,27 @@ func TestLoginn(t *testing.T) {
 // 	user := GCFGetHandle(mconn, "user")
 // 	fmt.Println(user)
 // }
+
+func TestReport(t *testing.T) {
+	mconn := SetConnection("MONGOULBI", "portsafedb")
+	var reportdata Report
+	reportdata.Reportid = 14678
+	reportdata.Date = "2023-11-18"
+	reportdata.Title = "Laporan Kejadian"
+	reportdata.Supervisorid = 103
+	reportdata.SupervisorName = "Budi multazam"
+	reportdata.SupervisorPosition = "Supervisor Keselamatan"
+	reportdata.IncidentLocation = "Branch Belawan"
+	reportdata.Description = "Pada tanggal ini, terjadi insiden kecil di gudang barang. Seorang pekerja menabrak rak penyimpanan, menyebabkan beberapa barang jatu"
+	reportdata.ObservationPhoto = "https://images3.alphacoders.com/165/thumb-1920-165265.jpg"
+	reportdata.PeopleReactions = "Jatuh ke Lantai"
+	reportdata.PPE = "Kepala"
+	reportdata.PersonPosition = "Terjatuh"
+	reportdata.Equipment = "Tidak Sesuai Dengan Jenis Pekerjaan"
+	reportdata.WorkProcedure = "Tidak Memenuhi"
+	reportdata.Area = "Gudang"
+	reportdata.ImmediateAction = "Tim darurat segera membersihkan area dan mengevaluasi cedera. Pekerja yang terlibat segera mendapatkan pertolongan medis."
+	reportdata.ImprovementPhoto = "https://images3.alphacoders.com/165/thumb-1920-165265.jpg"
+	reportdata.CorrectiveAction = "Akan dilakukan pelatihan tambahan untuk operator forklift dan peninjauan ulang prosedur pemindahan barang."
+	CreateReport(mconn, "reporting", reportdata)
+}

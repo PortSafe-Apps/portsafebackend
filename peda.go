@@ -195,41 +195,6 @@ func GCFCreateReport(MONGOCONNSTRINGENV, dbname, collectionname string, r *http.
 	}
 }
 
-// delete report
-func GCFDeleteReport(MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
-	mconn := SetConnection(MONGOCONNSTRINGENV, dbname)
-
-	var datareport Report
-	err := json.NewDecoder(r.Body).Decode(&datareport)
-	if err != nil {
-		return err.Error()
-	}
-
-	if err := DeleteReport(mconn, collectionname, datareport); err != nil {
-		return GCFReturnStruct(CreateResponse(true, "Success Delete Reporting", datareport))
-	} else {
-		return GCFReturnStruct(CreateResponse(false, "Failed Delete Reporting", datareport))
-	}
-
-}
-
-// update report
-func GCFUpdateReport(MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
-	mconn := SetConnection(MONGOCONNSTRINGENV, dbname)
-
-	var datareport Report
-	err := json.NewDecoder(r.Body).Decode(&datareport)
-	if err != nil {
-		return err.Error()
-	}
-
-	if err := UpdatedReport(mconn, collectionname, bson.M{"id": datareport.ID}, datareport); err != nil {
-		return GCFReturnStruct(CreateResponse(true, "Success Update Reporting", datareport))
-	} else {
-		return GCFReturnStruct(CreateResponse(false, "Failed Update Reporting", datareport))
-	}
-}
-
 // get all Report
 func GCFGetAllBlogg(MONGOCONNSTRINGENV, dbname, collectionname string) string {
 	mconn := SetConnection(MONGOCONNSTRINGENV, dbname)
