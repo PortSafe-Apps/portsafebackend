@@ -76,13 +76,13 @@ func FindUserByNipp(mongoconn *mongo.Database, collection string, nipp string) (
 }
 
 func IsPasswordValid(mongoconn *mongo.Database, collection string, userdata User) bool {
-	filter := bson.M{"Nipp": userdata.Nipp}
+	filter := bson.M{"nipp": userdata.Nipp}
 	res := atdb.GetOneDoc[User](mongoconn, collection, filter)
 	return CheckPasswordHash(userdata.Password, res.Password)
 }
 
 func IsPasswordValidd(mconn *mongo.Database, collection string, userdata User) (User, bool) {
-	filter := bson.M{"Nipp": userdata.Nipp}
+	filter := bson.M{"nipp": userdata.Nipp}
 	var foundUser User
 	err := mconn.Collection(collection).FindOne(context.Background(), filter).Decode(&foundUser)
 	if err != nil {

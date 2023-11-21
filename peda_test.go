@@ -66,8 +66,8 @@ func TestLoginn(t *testing.T) {
 	mconn := SetConnection("MONGOULBI", "portsafedb")
 	var userdata User
 	userdata.Nipp = "1204044"
-	userdata.Password = "portsafe123"
-	IsPasswordValidd(mconn, "user", userdata)
+	userdata.Password = "mawar123"
+	IsPasswordValid(mconn, "user", userdata)
 	fmt.Println(userdata)
 }
 
