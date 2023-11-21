@@ -53,11 +53,11 @@ func TestDeleteUser(t *testing.T) {
 func TestUserFix(t *testing.T) {
 	mconn := SetConnection("MONGOULBI", "portsafedb")
 	var userdata User
-	userdata.Nipp = "adminSPMT"
-	userdata.Nama = "admin"
-	userdata.Jabatan = "admin"
-	userdata.Divisi = "admin"
-	userdata.Bidang = "admin"
+	userdata.Nipp = "1204044"
+	userdata.Nama = "Fahira"
+	userdata.Jabatan = "Senior Vice Precident"
+	userdata.Divisi = "Perencanaan Strategis"
+	userdata.Bidang = "Kinerja Perusahaan"
 	userdata.Password = "portsafe123"
 	CreateUser(mconn, "user", userdata)
 }
@@ -65,7 +65,7 @@ func TestUserFix(t *testing.T) {
 func TestLoginn(t *testing.T) {
 	mconn := SetConnection("MONGOULBI", "portsafedb")
 	var userdata User
-	userdata.Nipp = "adminSPMT"
+	userdata.Nipp = "1204044"
 	userdata.Password = "portsafe123"
 	IsPasswordValidd(mconn, "user", userdata)
 	fmt.Println(userdata)

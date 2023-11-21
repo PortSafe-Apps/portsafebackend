@@ -26,18 +26,18 @@ func CreateUser(mongoconn *mongo.Database, collection string, userdata User) int
 		return err
 	}
 	privateKey, publicKey := watoken.GenerateKey()
-	nippid := userdata.Nipp
-	tokenstring, err := watoken.Encode(nippid, privateKey)
+	userid := userdata.Nipp
+	tokenstring, err := watoken.Encode(userid, privateKey)
 	if err != nil {
 		fmt.Println(err)
 	}
 	fmt.Println(tokenstring)
 	// decode token to get userid
-	nippidstring := watoken.DecodeGetId(publicKey, tokenstring)
-	if nippidstring == "" {
+	useridstring := watoken.DecodeGetId(publicKey, tokenstring)
+	if useridstring == "" {
 		fmt.Println("expire token")
 	}
-	fmt.Println(nippidstring)
+	fmt.Println(useridstring)
 	userdata.Private = privateKey
 	userdata.Public = publicKey
 	userdata.Password = hashedPassword
