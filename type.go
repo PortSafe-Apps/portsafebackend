@@ -11,9 +11,12 @@ type Properties struct {
 }
 
 type User struct {
-	Username string `json:"username" bson:"username"`
+	Nipp     string `json:"nipp" bson:"nipp"`
+	Nama     string `json:"nama" bson:"nama"`
+	Jabatan  string `json:"jabatan" bson:"jabatan"`
+	Divisi   string `json:"divisi" bson:"divisi"`
+	Bidang   string `json:"bidang" bson:"bidang"`
 	Password string `json:"password" bson:"password"`
-	Role     string `json:"role,omitempty" bson:"role,omitempty"`
 	Token    string `json:"token,omitempty" bson:"token,omitempty"`
 	Private  string `json:"private,omitempty" bson:"private,omitempty"`
 	Public   string `json:"public,omitempty" bson:"public,omitempty"`

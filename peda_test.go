@@ -30,10 +30,10 @@ func TestGeneratePrivateKeyPaseto(t *testing.T) {
 func TestHashFunction(t *testing.T) {
 	mconn := SetConnection("MONGOULBI", "portsafedb")
 	var userdata User
-	userdata.Username = "petped"
+	userdata.Nipp = "petped"
 	userdata.Password = "secret"
 
-	filter := bson.M{"username": userdata.Username}
+	filter := bson.M{"nipp": userdata.Nipp}
 	res := atdb.GetOneDoc[User](mconn, "user", filter)
 	fmt.Println("Mongo User Result: ", res)
 	hash, _ := HashPassword(userdata.Password)
@@ -46,33 +46,36 @@ func TestHashFunction(t *testing.T) {
 func TestDeleteUser(t *testing.T) {
 	mconn := SetConnection("MONGOULBI", "portsafedb")
 	var userdata User
-	userdata.Username = "yyy"
+	userdata.Nipp = "yyy"
 	DeleteUser(mconn, "user", userdata)
 }
 
 func TestUserFix(t *testing.T) {
 	mconn := SetConnection("MONGOULBI", "portsafedb")
 	var userdata User
-	userdata.Username = "admin"
+	userdata.Nipp = "adminSPMT"
+	userdata.Nama = "admin"
+	userdata.Jabatan = "admin"
+	userdata.Divisi = "admin"
+	userdata.Bidang = "admin"
 	userdata.Password = "portsafe123"
-	userdata.Role = "admin"
 	CreateUser(mconn, "user", userdata)
 }
 
 func TestLoginn(t *testing.T) {
 	mconn := SetConnection("MONGOULBI", "portsafedb")
 	var userdata User
-	userdata.Username = "petped"
-	userdata.Password = "secret"
-	IsPasswordValid(mconn, "user", userdata)
+	userdata.Nipp = "adminSPMT"
+	userdata.Password = "portsafe123"
+	IsPasswordValidd(mconn, "user", userdata)
 	fmt.Println(userdata)
 }
 
-// func TestAllUser(t *testing.T) {
-// 	mconn := SetConnection("MONGOULBI", "portsafedb")
-// 	user := GCFGetHandle(mconn, "user")
-// 	fmt.Println(user)
-// }
+func TestAllUser(t *testing.T) {
+	mconn := SetConnection("MONGOULBI", "portsafedb")
+	user := GCFGetHandle(mconn, "user")
+	fmt.Println(user)
+}
 
 func TestReport(t *testing.T) {
 	mconn := SetConnection("MONGOULBI", "portsafedb")
@@ -94,5 +97,6 @@ func TestReport(t *testing.T) {
 	reportdata.ImmediateAction = "Tim darurat segera membersihkan area dan mengevaluasi cedera. Pekerja yang terlibat segera mendapatkan pertolongan medis."
 	reportdata.ImprovementPhoto = "https://images3.alphacoders.com/165/thumb-1920-165265.jpg"
 	reportdata.CorrectiveAction = "Akan dilakukan pelatihan tambahan untuk operator forklift dan peninjauan ulang prosedur pemindahan barang."
-	CreateReport(mconn, "reporting", reportdata)
+	CreateReport(mconn, "report", reportdata)
+	fmt.Println(reportdata)
 }

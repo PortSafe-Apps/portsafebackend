@@ -26,18 +26,18 @@ func CreateUser(mongoconn *mongo.Database, collection string, userdata User) int
 		return err
 	}
 	privateKey, publicKey := watoken.GenerateKey()
-	userid := userdata.Username
-	tokenstring, err := watoken.Encode(userid, privateKey)
+	nippid := userdata.Nipp
+	tokenstring, err := watoken.Encode(nippid, privateKey)
 	if err != nil {
 		fmt.Println(err)
 	}
 	fmt.Println(tokenstring)
 	// decode token to get userid
-	useridstring := watoken.DecodeGetId(publicKey, tokenstring)
-	if useridstring == "" {
+	nippidstring := watoken.DecodeGetId(publicKey, tokenstring)
+	if nippidstring == "" {
 		fmt.Println("expire token")
 	}
-	fmt.Println(useridstring)
+	fmt.Println(nippidstring)
 	userdata.Private = privateKey
 	userdata.Public = publicKey
 	userdata.Password = hashedPassword
@@ -52,7 +52,7 @@ func GCFGetHandle(mongoconn *mongo.Database, collection string) []User {
 }
 
 func DeleteUser(mongoconn *mongo.Database, collection string, userdata User) interface{} {
-	filter := bson.M{"username": userdata.Username}
+	filter := bson.M{"Nipp": userdata.Nipp}
 	return atdb.DeleteOneDoc(mongoconn, collection, filter)
 }
 
@@ -60,40 +60,29 @@ func ReplaceOneDoc(mongoconn *mongo.Database, collection string, filter bson.M, 
 	return atdb.ReplaceOneDoc(mongoconn, collection, filter, userdata)
 }
 
-func FindUser(mongoconn *mongo.Database, collection string, userdata User) User {
-	filter := bson.M{"username": userdata.Username}
+func FindNipp(mongoconn *mongo.Database, collection string, userdata User) User {
+	filter := bson.M{"Nipp": userdata.Nipp}
 	return atdb.GetOneDoc[User](mongoconn, collection, filter)
 }
 
-func FindUserUser(mongoconn *mongo.Database, collection string, userdata User) User {
-	filter := bson.M{
-		"username": userdata.Username,
-	}
-	return atdb.GetOneDoc[User](mongoconn, collection, filter)
-}
-
-func FindUserUserr(mongoconn *mongo.Database, collection string, userdata User) (User, error) {
-	filter := bson.M{
-		"username": userdata.Username,
-	}
-
+func FindUserByNipp(mongoconn *mongo.Database, collection string, nipp string) (User, error) {
 	var user User
-	err := mongoconn.Collection(collection).FindOne(context.Background(), filter).Decode(&user)
+	filter := bson.M{"Nipp": nipp}
+	err := mongoconn.Collection(collection).FindOne(context.TODO(), filter).Decode(&user)
 	if err != nil {
 		return User{}, err
 	}
-
 	return user, nil
 }
 
 func IsPasswordValid(mongoconn *mongo.Database, collection string, userdata User) bool {
-	filter := bson.M{"username": userdata.Username}
+	filter := bson.M{"Nipp": userdata.Nipp}
 	res := atdb.GetOneDoc[User](mongoconn, collection, filter)
 	return CheckPasswordHash(userdata.Password, res.Password)
 }
 
 func IsPasswordValidd(mconn *mongo.Database, collection string, userdata User) (User, bool) {
-	filter := bson.M{"username": userdata.Username}
+	filter := bson.M{"Nipp": userdata.Nipp}
 	var foundUser User
 	err := mconn.Collection(collection).FindOne(context.Background(), filter).Decode(&foundUser)
 	if err != nil {
@@ -106,30 +95,10 @@ func IsPasswordValidd(mconn *mongo.Database, collection string, userdata User) (
 	return User{}, false
 }
 
-func FindUserByUsername(mongoconn *mongo.Database, collection string, username string) (User, error) {
-	var user User
-	filter := bson.M{"username": username}
-	err := mongoconn.Collection(collection).FindOne(context.TODO(), filter).Decode(&user)
-	if err != nil {
-		return User{}, err
-	}
-	return user, nil
-}
-
 // // reporting function
 func CreateReport(mongoconn *mongo.Database, collection string, reportdata Report) interface{} {
 	return atdb.InsertOneDoc(mongoconn, collection, reportdata)
 }
-
-// func DeleteReport(mongoconn *mongo.Database, collection string, reportdata Report) interface{} {
-// 	filter := bson.M{"id": reportdata.ID}
-// 	return atdb.DeleteOneDoc(mongoconn, collection, filter)
-// }
-
-// func UpdatedReport(mongoconn *mongo.Database, collection string, filter bson.M, reportdata Report) interface{} {
-// 	newFilter := bson.M{"id": reportdata.ID}
-// 	return atdb.ReplaceOneDoc(mongoconn, collection, newFilter, reportdata)
-// }
 
 func GetAllReportAll(mongoconn *mongo.Database, collection string) []Report {
 	report := atdb.GetAllDoc[[]Report](mongoconn, collection)
