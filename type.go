@@ -17,16 +17,11 @@ type User struct {
 	Divisi   string `json:"divisi" bson:"divisi"`
 	Bidang   string `json:"bidang" bson:"bidang"`
 	Password string `json:"password" bson:"password"`
-	Token    string `json:"token,omitempty" bson:"token,omitempty"`
-	Private  string `json:"private,omitempty" bson:"private,omitempty"`
-	Public   string `json:"public,omitempty" bson:"public,omitempty"`
+	Role     string `json:"role,omitempty" bson:"role,omitempty"`
 }
 
-type Payload struct {
-	User string    `json:"user"`
-	Exp  time.Time `json:"exp"`
-	Iat  time.Time `json:"iat"`
-	Nbf  time.Time `json:"nbf"`
+type ReqUsers struct {
+	Nipp string `json:"nipp"`
 }
 
 type Credential struct {
@@ -35,10 +30,32 @@ type Credential struct {
 	Message string `json:"message,omitempty" bson:"message,omitempty"`
 }
 
+type Cred struct {
+	Status  int    `json:"status"`
+	Message string `json:"message"`
+}
+
+type ResponseDataUser struct {
+	Status  bool   `json:"status" bson:"status"`
+	Message string `json:"message,omitempty" bson:"message,omitempty"`
+	Data    []User `json:"data,omitempty" bson:"data,omitempty"`
+}
+
 type Response struct {
-	Status  bool        `json:"status" bson:"status"`
-	Message string      `json:"message" bson:"message"`
-	Data    interface{} `json:"data" bson:"data"`
+	Token string `json:"token,omitempty" bson:"token,omitempty"`
+}
+
+type ResponseEncode struct {
+	Message string `json:"message,omitempty" bson:"message,omitempty"`
+	Token   string `json:"token,omitempty" bson:"token,omitempty"`
+}
+
+type Payload struct {
+	User string    `json:"user"`
+	Role string    `json:"role"`
+	Exp  time.Time `json:"exp"`
+	Iat  time.Time `json:"iat"`
+	Nbf  time.Time `json:"nbf"`
 }
 
 type Report struct {

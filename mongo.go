@@ -6,7 +6,6 @@ import (
 	"os"
 
 	"github.com/aiteung/atdb"
-	"github.com/whatsauth/watoken"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 )
@@ -19,31 +18,27 @@ func SetConnection(MONGOCONNSTRINGENV, dbname string) *mongo.Database {
 	return atdb.MongoConnect(DBmongoinfo)
 }
 
-func CreateUser(mongoconn *mongo.Database, collection string, userdata User) interface{} {
-	// Hash the password before storing it
-	hashedPassword, err := HashPassword(userdata.Password)
-	if err != nil {
-		return err
-	}
-	privateKey, publicKey := watoken.GenerateKey()
-	userid := userdata.Nipp
-	tokenstring, err := watoken.Encode(userid, privateKey)
-	if err != nil {
-		fmt.Println(err)
-	}
-	fmt.Println(tokenstring)
-	// decode token to get userid
-	useridstring := watoken.DecodeGetId(publicKey, tokenstring)
-	if useridstring == "" {
-		fmt.Println("expire token")
-	}
-	fmt.Println(useridstring)
-	userdata.Private = privateKey
-	userdata.Public = publicKey
-	userdata.Password = hashedPassword
+func ReplaceOneDoc(mongoconn *mongo.Database, collection string, filter bson.M, userdata User) interface{} {
+	return atdb.ReplaceOneDoc(mongoconn, collection, filter, userdata)
+}
 
-	// Insert the user data into the database
-	return atdb.InsertOneDoc(mongoconn, collection, userdata)
+func InsertOneDoc(db *mongo.Database, collection string, doc interface{}) (insertedID interface{}) {
+	insertResult, err := db.Collection(collection).InsertOne(context.TODO(), doc)
+	if err != nil {
+		fmt.Printf("InsertOneDoc: %v\n", err)
+	}
+	return insertResult.InsertedID
+}
+
+func GetAllUser(MongoConn *mongo.Database, colname string) []User {
+	data := atdb.GetAllDoc[[]User](MongoConn, colname)
+	return data
+}
+
+func GetOneUser(MongoConn *mongo.Database, colname string, userdata User) User {
+	filter := bson.M{"nipp": userdata.Nipp}
+	data := atdb.GetOneDoc[User](MongoConn, colname, filter)
+	return data
 }
 
 func GCFGetHandle(mongoconn *mongo.Database, collection string) []User {
@@ -51,61 +46,38 @@ func GCFGetHandle(mongoconn *mongo.Database, collection string) []User {
 	return user
 }
 
-func DeleteUser(mongoconn *mongo.Database, collection string, userdata User) interface{} {
-	filter := bson.M{"Nipp": userdata.Nipp}
-	return atdb.DeleteOneDoc(mongoconn, collection, filter)
-}
-
-func ReplaceOneDoc(mongoconn *mongo.Database, collection string, filter bson.M, userdata User) interface{} {
-	return atdb.ReplaceOneDoc(mongoconn, collection, filter, userdata)
-}
-
-func FindNipp(mongoconn *mongo.Database, collection string, userdata User) User {
-	filter := bson.M{"Nipp": userdata.Nipp}
-	return atdb.GetOneDoc[User](mongoconn, collection, filter)
-}
-
-func FindUserByNipp(mongoconn *mongo.Database, collection string, nipp string) (User, error) {
-	var user User
-	filter := bson.M{"Nipp": nipp}
-	err := mongoconn.Collection(collection).FindOne(context.TODO(), filter).Decode(&user)
+func UpdatePassword(mongoconn *mongo.Database, user User) (Updatedid interface{}) {
+	filter := bson.M{"nipp": user.Nipp}
+	pass, _ := HashPassword(user.Password)
+	update := bson.D{{Key: "$set", Value: bson.D{{Key: "password", Value: pass}}}}
+	res, err := mongoconn.Collection("user").UpdateOne(context.Background(), filter, update)
 	if err != nil {
-		return User{}, err
+		return "gagal update data"
 	}
-	return user, nil
+	return res
+}
+func InsertUserdata(MongoConn *mongo.Database, nipp, nama, jabatan, divisi, bidang, password, role string) (InsertedID interface{}) {
+	req := new(User)
+	req.Nipp = nipp
+	req.Nama = nama
+	req.Jabatan = jabatan
+	req.Divisi = divisi
+	req.Bidang = bidang
+	req.Password = password
+	req.Role = role
+	return InsertOneDoc(MongoConn, "user", req)
 }
 
-func IsPasswordValid(mongoconn *mongo.Database, collection string, userdata User) bool {
+func PasswordValidator(MongoConn *mongo.Database, colname string, userdata User) bool {
 	filter := bson.M{"nipp": userdata.Nipp}
-	res := atdb.GetOneDoc[User](mongoconn, collection, filter)
-	return CheckPasswordHash(userdata.Password, res.Password)
+	data := atdb.GetOneDoc[User](MongoConn, colname, filter)
+	hashChecker := CompareHashPass(userdata.Password, data.Password)
+	return hashChecker
 }
 
-func IsPasswordValidd(mconn *mongo.Database, collection string, userdata User) (User, bool) {
-	filter := bson.M{"nipp": userdata.Nipp}
-	var foundUser User
-	err := mconn.Collection(collection).FindOne(context.Background(), filter).Decode(&foundUser)
-	if err != nil {
-		return User{}, false
-	}
-	// Verify password here
-	if CheckPasswordHash(userdata.Password, foundUser.Password) {
-		return foundUser, true
-	}
-	return User{}, false
-}
-
-// // reporting function
-func CreateReport(mongoconn *mongo.Database, collection string, reportdata Report) interface{} {
-	return atdb.InsertOneDoc(mongoconn, collection, reportdata)
-}
-
-func GetAllReportAll(mongoconn *mongo.Database, collection string) []Report {
-	report := atdb.GetAllDoc[[]Report](mongoconn, collection)
-	return report
-}
-
-func GetIDReport(mongoconn *mongo.Database, collection string, reportdata Report) Report {
-	filter := bson.M{"id": reportdata.ID}
-	return atdb.GetOneDoc[Report](mongoconn, collection, filter)
+func CompareNipp(MongoConn *mongo.Database, Colname, nipp string) bool {
+	filter := bson.M{"nipp": nipp}
+	err := atdb.GetOneDoc[User](MongoConn, Colname, filter)
+	users := err.Nipp
+	return users != ""
 }
