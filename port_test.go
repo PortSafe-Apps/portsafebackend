@@ -48,8 +48,8 @@ func TestTokenEncoder(t *testing.T) {
 	conn := SetConnection("MONGOULBI", "portsafedb")
 	privateKey, publicKey := watoken.GenerateKey()
 	userdata := new(User)
-	userdata.Nipp = "1204044"
-	userdata.Password = "12345"
+	userdata.Nipp = "admin123"
+	userdata.Password = "mawar123"
 
 	data := GetOneUser(conn, "user", User{
 		Nipp:     userdata.Nipp,
@@ -110,34 +110,6 @@ func TestDecoder2(t *testing.T) {
 	fmt.Println("err : ", err)
 	fmt.Println("payload : ", pay)
 }
-
-// func TestDeleteUser(t *testing.T) {
-// 	mconn := SetConnection("MONGOULBI", "portsafedb")
-// 	var userdata User
-// 	userdata.Nipp = "yyy"
-// 	DeleteUser(mconn, "user", userdata)
-// }
-
-// func TestUserFix(t *testing.T) {
-// 	mconn := SetConnection("MONGOULBI", "portsafedb")
-// 	var userdata User
-// 	userdata.Nipp = "1204044"
-// 	userdata.Nama = "Fahira"
-// 	userdata.Jabatan = "Senior Vice Precident"
-// 	userdata.Divisi = "Perencanaan Strategis"
-// 	userdata.Bidang = "Kinerja Perusahaan"
-// 	userdata.Password = "portsafe123"
-// 	CreateUser(mconn, "user", userdata)
-// }
-
-// func TestLoginn(t *testing.T) {
-// 	mconn := SetConnection("MONGOULBI", "portsafedb")
-// 	var userdata User
-// 	userdata.Nipp = "1204044"
-// 	userdata.Password = "mawar123"
-// 	IsPasswordValid(mconn, "user", userdata)
-// 	fmt.Println(userdata)
-// }
 
 func TestAllUser(t *testing.T) {
 	mconn := SetConnection("MONGOULBI", "portsafedb")
