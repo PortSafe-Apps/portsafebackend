@@ -1,4 +1,4 @@
-package port
+package authbackend
 
 import (
 	"fmt"
@@ -48,8 +48,8 @@ func TestTokenEncoder(t *testing.T) {
 	conn := SetConnection("MONGOULBI", "portsafedb")
 	privateKey, publicKey := watoken.GenerateKey()
 	userdata := new(User)
-	userdata.Nipp = "admin123"
-	userdata.Password = "mawar123"
+	userdata.Nipp = "admin"
+	userdata.Password = "portsafe123"
 
 	data := GetOneUser(conn, "user", User{
 		Nipp:     userdata.Nipp,
@@ -78,7 +78,7 @@ func TestDecodeToken(t *testing.T) {
 	fmt.Println(deco)
 }
 
-func TestCompareNipp(t *testing.T) {
+func TestCompareUsername(t *testing.T) {
 	conn := SetConnection("MONGOULBI", "portsafedb")
 	deco := watoken.DecodeGetId("public",
 		"token")
@@ -88,8 +88,8 @@ func TestCompareNipp(t *testing.T) {
 
 func TestEncodeWithRole(t *testing.T) {
 	privateKey, publicKey := watoken.GenerateKey()
-	role := "user"
-	username := "1204044"
+	role := "admin"
+	username := "admin"
 	encoder, err := EncodeWithRole(role, username, privateKey)
 
 	fmt.Println(" error :", err)

@@ -1,4 +1,4 @@
-package port
+package authbackend
 
 import (
 	"context"
@@ -16,10 +16,6 @@ func SetConnection(MONGOCONNSTRINGENV, dbname string) *mongo.Database {
 		DBName:   dbname,
 	}
 	return atdb.MongoConnect(DBmongoinfo)
-}
-
-func ReplaceOneDoc(mongoconn *mongo.Database, collection string, filter bson.M, userdata User) interface{} {
-	return atdb.ReplaceOneDoc(mongoconn, collection, filter, userdata)
 }
 
 func InsertOneDoc(db *mongo.Database, collection string, doc interface{}) (insertedID interface{}) {
@@ -41,21 +37,6 @@ func GetOneUser(MongoConn *mongo.Database, colname string, userdata User) User {
 	return data
 }
 
-func GCFGetHandle(mongoconn *mongo.Database, collection string) []User {
-	user := atdb.GetAllDoc[[]User](mongoconn, collection)
-	return user
-}
-
-func UpdatePassword(mongoconn *mongo.Database, user User) (Updatedid interface{}) {
-	filter := bson.M{"nipp": user.Nipp}
-	pass, _ := HashPassword(user.Password)
-	update := bson.D{{Key: "$set", Value: bson.D{{Key: "password", Value: pass}}}}
-	res, err := mongoconn.Collection("user").UpdateOne(context.Background(), filter, update)
-	if err != nil {
-		return "gagal update data"
-	}
-	return res
-}
 func InsertUserdata(MongoConn *mongo.Database, nipp, nama, jabatan, divisi, bidang, password, role string) (InsertedID interface{}) {
 	req := new(User)
 	req.Nipp = nipp
