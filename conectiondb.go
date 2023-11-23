@@ -53,7 +53,7 @@ func InsertUserdata(MongoConn *mongo.Database, nipp, nama, jabatan, divisi, bida
 func PasswordValidator(MongoConn *mongo.Database, colname string, userdata User) bool {
 	filter := bson.M{"nipp": userdata.Nipp}
 	data := atdb.GetOneDoc[User](MongoConn, colname, filter)
-	hashChecker := CompareHashPass(userdata.Password, data.Password)
+	hashChecker := CheckPasswordHash(userdata.Password, data.Password)
 	return hashChecker
 }
 

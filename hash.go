@@ -15,11 +15,6 @@ func CheckPasswordHash(password, hash string) bool {
 	return err == nil
 }
 
-func CompareHashPass(password, hash string) bool {
-	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
-	return err == nil
-}
-
 func TokenEncoder(username, privatekey string) string {
 	resp := new(ResponseEncode)
 	encode, err := watoken.Encode(username, privatekey)

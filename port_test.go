@@ -40,7 +40,7 @@ func TestHashFunc(t *testing.T) {
 	fmt.Println(" ")
 	hashpass, _ := HashPassword(userdata.Password)
 	fmt.Println("Hasil hash : ", hashpass)
-	compared := CompareHashPass(userdata.Password, data.Password)
+	compared := CheckPasswordHash(userdata.Password, data.Password)
 	fmt.Println("result : ", compared)
 }
 
