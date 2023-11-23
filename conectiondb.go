@@ -10,16 +10,13 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-func SetConnection(MONGOCONNSTRINGENV, dbname string) *mongo.Database {
-	var DBmongoinfo = atdb.DBInfo{
-		DBString: os.Getenv(MONGOCONNSTRINGENV),
+func SetConnection(MongoString, dbname string) *mongo.Database {
+	MongoInfo := atdb.DBInfo{
+		DBString: os.Getenv(MongoString),
 		DBName:   dbname,
 	}
-	return atdb.MongoConnect(DBmongoinfo)
-}
-
-func ReplaceOneDoc(mongoconn *mongo.Database, collection string, filter bson.M, userdata User) interface{} {
-	return atdb.ReplaceOneDoc(mongoconn, collection, filter, userdata)
+	conn := atdb.MongoConnect(MongoInfo)
+	return conn
 }
 
 func InsertOneDoc(db *mongo.Database, collection string, doc interface{}) (insertedID interface{}) {
@@ -41,21 +38,6 @@ func GetOneUser(MongoConn *mongo.Database, colname string, userdata User) User {
 	return data
 }
 
-func GCFGetHandle(mongoconn *mongo.Database, collection string) []User {
-	user := atdb.GetAllDoc[[]User](mongoconn, collection)
-	return user
-}
-
-func UpdatePassword(mongoconn *mongo.Database, user User) (Updatedid interface{}) {
-	filter := bson.M{"nipp": user.Nipp}
-	pass, _ := HashPassword(user.Password)
-	update := bson.D{{Key: "$set", Value: bson.D{{Key: "password", Value: pass}}}}
-	res, err := mongoconn.Collection("user").UpdateOne(context.Background(), filter, update)
-	if err != nil {
-		return "gagal update data"
-	}
-	return res
-}
 func InsertUserdata(MongoConn *mongo.Database, nipp, nama, jabatan, divisi, bidang, password, role string) (InsertedID interface{}) {
 	req := new(User)
 	req.Nipp = nipp
@@ -78,6 +60,22 @@ func PasswordValidator(MongoConn *mongo.Database, colname string, userdata User)
 func CompareNipp(MongoConn *mongo.Database, Colname, nipp string) bool {
 	filter := bson.M{"nipp": nipp}
 	err := atdb.GetOneDoc[User](MongoConn, Colname, filter)
-	users := err.Nipp
-	return users != ""
+	user := err.Nipp
+	return user != ""
+}
+
+func InsertDataReport(MongoConn *mongo.Database, colname string, rpt Report) (InsertedID interface{}) {
+	req := new(Report)
+	req.Reportid = rpt.Reportid
+	req.Date = rpt.Date
+	req.User = rpt.User
+	req.IncidentLocation = rpt.IncidentLocation
+	req.Description = rpt.Description
+	req.ObservationPhoto = rpt.ObservationPhoto
+	req.TypeDangerousActions = rpt.TypeDangerousActions
+	req.Area = rpt.Area
+	req.ImmediateAction = rpt.ImmediateAction
+	req.ImprovementPhoto = rpt.ImprovementPhoto
+	req.CorrectiveAction = rpt.CorrectiveAction
+	return InsertOneDoc(MongoConn, colname, req)
 }

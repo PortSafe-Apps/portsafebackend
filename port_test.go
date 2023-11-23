@@ -7,8 +7,8 @@ import (
 	"github.com/whatsauth/watoken"
 )
 
-var publickeyb = "publickey"
-var encode = "encode"
+var publickeyb = "57f34b9441758a1e76f0e04b2ffe6a3b808477a92a9298180ea7364869580c1c"
+var encode = "v4.public.eyJleHAiOiIyMDIzLTExLTIzVDIxOjQxOjQ2KzA3OjAwIiwiaWF0IjoiMjAyMy0xMS0yM1QxOTo0MTo0NiswNzowMCIsIm5iZiI6IjIwMjMtMTEtMjNUMTk6NDE6NDYrMDc6MDAiLCJyb2xlIjoiYWRtaW4iLCJ1c2VyIjoiYWRtaW4xMjMifQw74ocd_AN3prCazQAfA24_sJFKvSsO9D0PmYFWsSPK9AvWCDluDwxHMWTPqkOaFIMU6LIjsF9mlCD1UTc6TAw"
 
 func TestGenerateKeyPASETO(t *testing.T) {
 	privateKey, publicKey := watoken.GenerateKey()
@@ -48,8 +48,8 @@ func TestTokenEncoder(t *testing.T) {
 	conn := SetConnection("MONGOULBI", "portsafedb")
 	privateKey, publicKey := watoken.GenerateKey()
 	userdata := new(User)
-	userdata.Nipp = "admin123"
-	userdata.Password = "mawar123"
+	userdata.Nipp = "admin"
+	userdata.Password = "portsafe123"
 
 	data := GetOneUser(conn, "user", User{
 		Nipp:     userdata.Nipp,
@@ -68,29 +68,29 @@ func TestInsertUserdata(t *testing.T) {
 	conn := SetConnection("MONGOULBI", "portsafedb")
 	password, err := HashPassword("12345")
 	fmt.Println("err", err)
-	data := InsertUserdata(conn, "1204044", "Fahira", "SVP", "Humas", "usaha", password, "user")
+	data := InsertUserdata(conn, "1204044", "salsa", "supervisor", "humas", "sosmed", password, "user")
 	fmt.Println(data)
 }
 
 func TestDecodeToken(t *testing.T) {
-	deco := watoken.DecodeGetId("public",
-		"token")
+	deco := watoken.DecodeGetId("e84f26c247d45405e68ed33a9592b6cd8ea67697c8726f35ea08ed41de630fde",
+		"v4.public.eyJleHAiOiIyMDIzLTExLTIzVDIxOjM2OjQ5KzA3OjAwIiwiaWF0IjoiMjAyMy0xMS0yM1QxOTozNjo0OSswNzowMCIsImlkIjoiYWRtaW4iLCJuYmYiOiIyMDIzLTExLTIzVDE5OjM2OjQ5KzA3OjAwIn3jqnBG_Sgj9Rgm8zr9mogEVFSF83_zDkHED6JK2WPN5FZVCdxa8ceWGHJpuxh0vAdwEw5jTGrWDxIIGWd2RSEF")
 	fmt.Println(deco)
 }
 
-func TestCompareNipp(t *testing.T) {
+func TestCompareUsername(t *testing.T) {
 	conn := SetConnection("MONGOULBI", "portsafedb")
-	deco := watoken.DecodeGetId("public",
-		"token")
+	deco := watoken.DecodeGetId("e84f26c247d45405e68ed33a9592b6cd8ea67697c8726f35ea08ed41de630fde",
+		"v4.public.eyJleHAiOiIyMDIzLTExLTIzVDIxOjM2OjQ5KzA3OjAwIiwiaWF0IjoiMjAyMy0xMS0yM1QxOTozNjo0OSswNzowMCIsImlkIjoiYWRtaW4iLCJuYmYiOiIyMDIzLTExLTIzVDE5OjM2OjQ5KzA3OjAwIn3jqnBG_Sgj9Rgm8zr9mogEVFSF83_zDkHED6JK2WPN5FZVCdxa8ceWGHJpuxh0vAdwEw5jTGrWDxIIGWd2RSEF")
 	compare := CompareNipp(conn, "user", deco)
 	fmt.Println(compare)
 }
 
 func TestEncodeWithRole(t *testing.T) {
 	privateKey, publicKey := watoken.GenerateKey()
-	role := "user"
-	username := "1204044"
-	encoder, err := EncodeWithRole(role, username, privateKey)
+	role := "admin"
+	nipp := "admin123"
+	encoder, err := EncodeWithRole(role, nipp, privateKey)
 
 	fmt.Println(" error :", err)
 	fmt.Println("Private :", privateKey)
@@ -110,33 +110,3 @@ func TestDecoder2(t *testing.T) {
 	fmt.Println("err : ", err)
 	fmt.Println("payload : ", pay)
 }
-
-func TestAllUser(t *testing.T) {
-	mconn := SetConnection("MONGOULBI", "portsafedb")
-	user := GCFGetHandle(mconn, "user")
-	fmt.Println(user)
-}
-
-// func TestReport(t *testing.T) {
-// 	mconn := SetConnection("MONGOULBI", "portsafedb")
-// 	var reportdata Report
-// 	reportdata.Reportid = "0000-K3-001"
-// 	reportdata.Date = "2023-11-18"
-// 	reportdata.Supervisorid = 103
-// 	reportdata.SupervisorName = "Budi multazam"
-// 	reportdata.SupervisorPosition = "Supervisor Keselamatan"
-// 	reportdata.IncidentLocation = "Branch Belawan"
-// 	reportdata.Description = "Pada tanggal ini, terjadi insiden kecil di gudang barang. Seorang pekerja menabrak rak penyimpanan, menyebabkan beberapa barang jatu"
-// 	reportdata.ObservationPhoto = "https://images3.alphacoders.com/165/thumb-1920-165265.jpg"
-// 	reportdata.PeopleReactions = "Jatuh ke Lantai"
-// 	reportdata.PPE = "Kepala"
-// 	reportdata.PersonPosition = "Terjatuh"
-// 	reportdata.Equipment = "Tidak Sesuai Dengan Jenis Pekerjaan"
-// 	reportdata.WorkProcedure = "Tidak Memenuhi"
-// 	reportdata.Area = "Gudang"
-// 	reportdata.ImmediateAction = "Tim darurat segera membersihkan area dan mengevaluasi cedera. Pekerja yang terlibat segera mendapatkan pertolongan medis."
-// 	reportdata.ImprovementPhoto = "https://images3.alphacoders.com/165/thumb-1920-165265.jpg"
-// 	reportdata.CorrectiveAction = "Akan dilakukan pelatihan tambahan untuk operator forklift dan peninjauan ulang prosedur pemindahan barang."
-// 	CreateReport(mconn, "report", reportdata)
-// 	fmt.Println(reportdata)
-// }

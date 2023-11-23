@@ -8,12 +8,12 @@ import (
 	"aidanwoods.dev/go-paseto"
 )
 
-func EncodeWithRole(role, nipp, privatekey string) (string, error) {
+func EncodeWithRole(role, username, privatekey string) (string, error) {
 	token := paseto.NewToken()
 	token.SetIssuedAt(time.Now())
 	token.SetNotBefore(time.Now())
 	token.SetExpiration(time.Now().Add(2 * time.Hour))
-	token.SetString("user", nipp)
+	token.SetString("user", username)
 	token.SetString("role", role)
 	key, err := paseto.NewV4AsymmetricSecretKeyFromHex(privatekey)
 	return token.V4Sign(key, nil), err
@@ -22,18 +22,25 @@ func EncodeWithRole(role, nipp, privatekey string) (string, error) {
 func Decoder(publickey, tokenstr string) (payload Payload, err error) {
 	var token *paseto.Token
 	var pubKey paseto.V4AsymmetricPublicKey
-	pubKey, err = paseto.NewV4AsymmetricPublicKeyFromHex(publickey) // this wil fail if given key in an invalid format
+
+	// Pastikan bahwa kunci publik dalam format heksadesimal yang benar
+	pubKey, err = paseto.NewV4AsymmetricPublicKeyFromHex(publickey)
 	if err != nil {
-		fmt.Println("Decode NewV4AsymmetricPublicKeyFromHex : ", err)
+		return payload, fmt.Errorf("failed to create public key: %s", err)
 	}
-	parser := paseto.NewParser()                             // only used because this example token has expired, use NewParser() (which checks expiry by default)
-	token, err = parser.ParseV4Public(pubKey, tokenstr, nil) // this will fail if parsing failes, cryptographic checks fail, or validation rules fail
+
+	parser := paseto.NewParser()
+
+	// Pastikan bahwa token memiliki format yang benar
+	token, err = parser.ParseV4Public(pubKey, tokenstr, nil)
 	if err != nil {
-		fmt.Println("Decode ParseV4Public : ", err)
+		return payload, fmt.Errorf("failed to parse token: %s", err)
 	} else {
+		// Handle token claims
 		json.Unmarshal(token.ClaimsJSON(), &payload)
 	}
-	return payload, err
+
+	return payload, nil
 }
 
 func DecodeGetUser(PublicKey, tokenStr string) (pay string, err error) {
