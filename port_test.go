@@ -48,8 +48,8 @@ func TestTokenEncoder(t *testing.T) {
 	conn := SetConnection("MONGOULBI", "portsafedb")
 	privateKey, publicKey := watoken.GenerateKey()
 	userdata := new(User)
-	userdata.Nipp = "admin"
-	userdata.Password = "portsafe123"
+	userdata.Nipp = "admin123"
+	userdata.Password = "portsafe"
 
 	data := GetOneUser(conn, "user", User{
 		Nipp:     userdata.Nipp,
@@ -66,22 +66,22 @@ func TestTokenEncoder(t *testing.T) {
 
 func TestInsertUserdata(t *testing.T) {
 	conn := SetConnection("MONGOULBI", "portsafedb")
-	password, err := HashPassword("12345")
+	password, err := HashPassword("portsafe")
 	fmt.Println("err", err)
-	data := InsertUserdata(conn, "1204044", "salsa", "supervisor", "humas", "sosmed", password, "user")
+	data := InsertUserdata(conn, "admin123", "silvi", "admin utama", "master data", "admin", password, "user")
 	fmt.Println(data)
 }
 
 func TestDecodeToken(t *testing.T) {
-	deco := watoken.DecodeGetId("e84f26c247d45405e68ed33a9592b6cd8ea67697c8726f35ea08ed41de630fde",
-		"v4.public.eyJleHAiOiIyMDIzLTExLTIzVDIxOjM2OjQ5KzA3OjAwIiwiaWF0IjoiMjAyMy0xMS0yM1QxOTozNjo0OSswNzowMCIsImlkIjoiYWRtaW4iLCJuYmYiOiIyMDIzLTExLTIzVDE5OjM2OjQ5KzA3OjAwIn3jqnBG_Sgj9Rgm8zr9mogEVFSF83_zDkHED6JK2WPN5FZVCdxa8ceWGHJpuxh0vAdwEw5jTGrWDxIIGWd2RSEF")
+	deco := watoken.DecodeGetId("d5555cce6e6fec600b838c7e5a973cffce4e35d12865cc0b5c49ba5c44a5f468",
+		"v4.public.eyJleHAiOiIyMDIzLTExLTI0VDEwOjM1OjA0KzA3OjAwIiwiaWF0IjoiMjAyMy0xMS0yNFQwODozNTowNCswNzowMCIsImlkIjoiYWRtaW4xMjMiLCJuYmYiOiIyMDIzLTExLTI0VDA4OjM1OjA0KzA3OjAwIn0aI88_TB-piGTEw0WfTJSC2ND4FYjHrOEohMc_2BZfBE72ldtFWoyR-I94VNJpokFKvAB51DMYinQ85IVJrEMC")
 	fmt.Println(deco)
 }
 
-func TestCompareUsername(t *testing.T) {
+func TestCompareNipp(t *testing.T) {
 	conn := SetConnection("MONGOULBI", "portsafedb")
-	deco := watoken.DecodeGetId("e84f26c247d45405e68ed33a9592b6cd8ea67697c8726f35ea08ed41de630fde",
-		"v4.public.eyJleHAiOiIyMDIzLTExLTIzVDIxOjM2OjQ5KzA3OjAwIiwiaWF0IjoiMjAyMy0xMS0yM1QxOTozNjo0OSswNzowMCIsImlkIjoiYWRtaW4iLCJuYmYiOiIyMDIzLTExLTIzVDE5OjM2OjQ5KzA3OjAwIn3jqnBG_Sgj9Rgm8zr9mogEVFSF83_zDkHED6JK2WPN5FZVCdxa8ceWGHJpuxh0vAdwEw5jTGrWDxIIGWd2RSEF")
+	deco := watoken.DecodeGetId("d5555cce6e6fec600b838c7e5a973cffce4e35d12865cc0b5c49ba5c44a5f468",
+		"v4.public.eyJleHAiOiIyMDIzLTExLTI0VDEwOjM1OjA0KzA3OjAwIiwiaWF0IjoiMjAyMy0xMS0yNFQwODozNTowNCswNzowMCIsImlkIjoiYWRtaW4xMjMiLCJuYmYiOiIyMDIzLTExLTI0VDA4OjM1OjA0KzA3OjAwIn0aI88_TB-piGTEw0WfTJSC2ND4FYjHrOEohMc_2BZfBE72ldtFWoyR-I94VNJpokFKvAB51DMYinQ85IVJrEMC")
 	compare := CompareNipp(conn, "user", deco)
 	fmt.Println(compare)
 }
