@@ -170,6 +170,20 @@ func InsertReport(MongoEnv, dbname, colname, publickey string, r *http.Request) 
 					resp.Status = false
 					resp.Message = "Gagal Hash Code"
 				}
+
+				// Memilih sub jenis yang diinginkan (dalam hal ini, SubTypes[0])
+				selectedSubType := ""
+				if len(req.TypeDangerousActions.SubTypes) > 0 {
+					selectedSubType = req.TypeDangerousActions.SubTypes[0]
+				}
+
+				// Membuat objek baru hanya dengan satu sub jenis yang dipilih
+				selectedTypeDangerousAction := TypeDangerousActions{
+					TypeId:   req.TypeDangerousActions.TypeId,
+					TypeName: req.TypeDangerousActions.TypeName,
+					SubTypes: []string{selectedSubType},
+				}
+
 				InsertDataReport(conn, colname, Report{
 					Reportid: req.Reportid,
 					Date:     req.Date,
@@ -182,14 +196,10 @@ func InsertReport(MongoEnv, dbname, colname, publickey string, r *http.Request) 
 						Password: pass,
 						Role:     req.Account.Role,
 					},
-					IncidentLocation: req.IncidentLocation,
-					Description:      req.Description,
-					ObservationPhoto: req.ObservationPhoto,
-					TypeDangerousActions: TypeDangerousActions{
-						TypeId:   req.TypeDangerousActions.TypeId,
-						TypeName: req.TypeDangerousActions.TypeName,
-						SubType:  req.TypeDangerousActions.SubType,
-					},
+					IncidentLocation:     req.IncidentLocation,
+					Description:          req.Description,
+					ObservationPhoto:     req.ObservationPhoto,
+					TypeDangerousActions: selectedTypeDangerousAction,
 					Area: Area{
 						AreaId:   req.Area.AreaId,
 						AreaName: req.Area.AreaName,
@@ -198,6 +208,7 @@ func InsertReport(MongoEnv, dbname, colname, publickey string, r *http.Request) 
 					ImprovementPhoto: req.ImprovementPhoto,
 					CorrectiveAction: req.CorrectiveAction,
 				})
+
 				InsertUserdata(conn, req.Account.Nipp, req.Account.Nama, req.Account.Jabatan, req.Account.Divisi, req.Account.Bidang, pass, req.Account.Role)
 				resp.Status = true
 				resp.Message = "Berhasil Insert data"
@@ -227,6 +238,19 @@ func UpdateDataReport(MongoEnv, dbname, publickey string, r *http.Request) strin
 					req.Message = "Anda tidak bisa Insert data karena bukan HR atau admin"
 				}
 			} else {
+				// Memilih sub jenis yang diinginkan (dalam hal ini, SubTypes[0])
+				selectedSubType := ""
+				if len(resp.TypeDangerousActions.SubTypes) > 0 {
+					selectedSubType = resp.TypeDangerousActions.SubTypes[0]
+				}
+
+				// Membuat objek baru hanya dengan satu sub jenis yang dipilih
+				selectedTypeDangerousAction := TypeDangerousActions{
+					TypeId:   resp.TypeDangerousActions.TypeId,
+					TypeName: resp.TypeDangerousActions.TypeName,
+					SubTypes: []string{selectedSubType},
+				}
+
 				conn := SetConnection(MongoEnv, dbname)
 				UpdateReport(conn, context.Background(), Report{
 					Reportid: resp.Reportid,
@@ -240,14 +264,10 @@ func UpdateDataReport(MongoEnv, dbname, publickey string, r *http.Request) strin
 						Password: resp.Account.Password,
 						Role:     resp.Account.Role,
 					},
-					IncidentLocation: resp.IncidentLocation,
-					Description:      resp.Description,
-					ObservationPhoto: resp.ObservationPhoto,
-					TypeDangerousActions: TypeDangerousActions{
-						TypeId:   resp.TypeDangerousActions.TypeId,
-						TypeName: resp.TypeDangerousActions.TypeName,
-						SubType:  resp.TypeDangerousActions.SubType,
-					},
+					IncidentLocation:     resp.IncidentLocation,
+					Description:          resp.Description,
+					ObservationPhoto:     resp.ObservationPhoto,
+					TypeDangerousActions: selectedTypeDangerousAction,
 					Area: Area{
 						AreaId:   resp.Area.AreaId,
 						AreaName: resp.Area.AreaName,

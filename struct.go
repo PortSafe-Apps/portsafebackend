@@ -64,9 +64,9 @@ type Report struct {
 }
 
 type TypeDangerousActions struct {
-	TypeId   int    `json:"typeId" bson:"typeId"`
-	TypeName string `json:"typeName" bson:"typeName"`
-	SubType  string `json:"subType" bson:"subType"`
+	TypeId   int      `json:"typeId" bson:"typeId"`
+	TypeName string   `json:"typeName" bson:"typeName"`
+	SubTypes []string `json:"subTypes" bson:"subTypes"`
 }
 
 type Area struct {
