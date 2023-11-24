@@ -67,17 +67,17 @@ func GetDataUserForAdmin(PublicKey, MongoEnv, dbname, colname string, r *http.Re
 		req.Message = "Header Login Not Found"
 	} else {
 		cekadmin := IsAdmin(tokenlogin, PublicKey)
-		if cekadmin != true {
+		if !cekadmin {
 			req.Status = false
 			req.Message = "IHHH Kamu bukan admin"
 		}
 		checktoken, err := DecodeGetUser(os.Getenv(PublicKey), tokenlogin)
 		if err != nil {
 			req.Status = false
-			req.Message = "tidak ada data nipp : " + tokenlogin
+			req.Message = "tidak ada data username : " + tokenlogin
 		}
 		compared := CompareNipp(conn, colname, checktoken)
-		if compared != true {
+		if !compared {
 			req.Status = false
 			req.Message = "Data User tidak ada"
 		} else {
