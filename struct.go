@@ -52,7 +52,7 @@ type ResponseBack struct {
 type Report struct {
 	Reportid             string               `json:"reportid" bson:"reportid"`
 	Date                 string               `json:"date" bson:"date"`
-	User                 User                 `json:"user" bson:"user,omitempty"`
+	Account              User                 `json:"user" bson:"user,omitempty"`
 	IncidentLocation     string               `json:"incidentLocation" bson:"incidentLocation"`
 	Description          string               `json:"description" bson:"description"`
 	ObservationPhoto     string               `json:"observationPhoto" bson:"observationPhoto"`

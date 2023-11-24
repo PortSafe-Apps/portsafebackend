@@ -50,11 +50,30 @@ func InsertUserdata(MongoConn *mongo.Database, nipp, nama, jabatan, divisi, bida
 	return InsertOneDoc(MongoConn, "user", req)
 }
 
+func DeleteUser(Mongoconn *mongo.Database, colname, nipp string) (deleted interface{}, err error) {
+	filter := bson.M{"nipp": nipp}
+	data := atdb.DeleteOneDoc(Mongoconn, colname, filter)
+	return data, err
+}
+
 func PasswordValidator(MongoConn *mongo.Database, colname string, userdata User) bool {
 	filter := bson.M{"nipp": userdata.Nipp}
 	data := atdb.GetOneDoc[User](MongoConn, colname, filter)
 	hashChecker := CheckPasswordHash(userdata.Password, data.Password)
 	return hashChecker
+}
+
+func UpdatePassword(mongoconn *mongo.Database, user User) (Updatedid interface{}) {
+	filter := bson.D{{Key: "nipp", Value: user.Nipp}}
+	pass, _ := HashPassword(user.Password)
+	update := bson.D{{Key: "$Set", Value: bson.D{
+		{Key: "password", Value: pass},
+	}}}
+	res, err := mongoconn.Collection("user").UpdateOne(context.Background(), filter, update)
+	if err != nil {
+		return "gagal update data"
+	}
+	return res
 }
 
 func CompareNipp(MongoConn *mongo.Database, Colname, nipp string) bool {
@@ -68,7 +87,7 @@ func InsertDataReport(MongoConn *mongo.Database, colname string, rpt Report) (In
 	req := new(Report)
 	req.Reportid = rpt.Reportid
 	req.Date = rpt.Date
-	req.User = rpt.User
+	req.Account = rpt.Account
 	req.IncidentLocation = rpt.IncidentLocation
 	req.Description = rpt.Description
 	req.ObservationPhoto = rpt.ObservationPhoto
@@ -78,4 +97,30 @@ func InsertDataReport(MongoConn *mongo.Database, colname string, rpt Report) (In
 	req.ImprovementPhoto = rpt.ImprovementPhoto
 	req.CorrectiveAction = rpt.CorrectiveAction
 	return InsertOneDoc(MongoConn, colname, req)
+}
+
+func UpdateReport(Mongoconn *mongo.Database, ctx context.Context, emp Report) (UpdateId interface{}, err error) {
+	filter := bson.D{{Key: "reportid", Value: emp.Reportid}}
+	res, err := Mongoconn.Collection("report").ReplaceOne(ctx, filter, emp)
+	if err != nil {
+		return nil, err
+	}
+	return res, nil
+}
+
+func DeleteReportData(mongoconn *mongo.Database, colname, Repid string) (deletedid interface{}, err error) {
+	filter := bson.M{"reportid": Repid}
+	data := atdb.DeleteOneDoc(mongoconn, colname, filter)
+	return data, err
+}
+
+func GetOneReportData(mongoconn *mongo.Database, colname, Repid string) (dest Report) {
+	filter := bson.M{"reportid": Repid}
+	dest = atdb.GetOneDoc[Report](mongoconn, colname, filter)
+	return
+}
+
+func GetAllReportData(Mongoconn *mongo.Database, colname string) []Report {
+	data := atdb.GetAllDoc[[]Report](Mongoconn, colname)
+	return data
 }
