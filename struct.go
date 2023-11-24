@@ -50,17 +50,17 @@ type ResponseBack struct {
 }
 
 type Report struct {
-	Reportid             string               `json:"reportid" bson:"reportid"`
-	Date                 string               `json:"date" bson:"date"`
-	Account              User                 `json:"user" bson:"user,omitempty"`
-	Location             Location             `json:"location" bson:"location"`
-	Description          string               `json:"description" bson:"description"`
-	ObservationPhoto     string               `json:"observationPhoto" bson:"observationPhoto"`
-	TypeDangerousActions TypeDangerousActions `json:"typeDangerousActions" bson:"typeDangerousActions,omitempty"`
-	Area                 Area                 `json:"area" bson:"area"`
-	ImmediateAction      string               `json:"immediateAction" bson:"immediateAction"`
-	ImprovementPhoto     string               `json:"improvementPhoto" bson:"improvementPhoto"`
-	CorrectiveAction     string               `json:"correctiveAction" bson:"correctiveAction"`
+	Reportid             string                 `json:"reportid" bson:"reportid"`
+	Date                 string                 `json:"date" bson:"date"`
+	Account              User                   `json:"user" bson:"user,omitempty"`
+	Location             Location               `json:"location" bson:"location"`
+	Description          string                 `json:"description" bson:"description"`
+	ObservationPhoto     string                 `json:"observationPhoto" bson:"observationPhoto"`
+	TypeDangerousActions []TypeDangerousActions `json:"typeDangerousActions" bson:"typeDangerousActions,omitempty"`
+	Area                 Area                   `json:"area" bson:"area"`
+	ImmediateAction      string                 `json:"immediateAction" bson:"immediateAction"`
+	ImprovementPhoto     string                 `json:"improvementPhoto" bson:"improvementPhoto"`
+	CorrectiveAction     string                 `json:"correctiveAction" bson:"correctiveAction"`
 }
 
 type TypeDangerousActions struct {
@@ -70,12 +70,12 @@ type TypeDangerousActions struct {
 }
 
 type Location struct {
-	LocationId   int    `json:"locationId" bson:"locationId"`
+	LocationId   string `json:"locationId" bson:"locationId"`
 	LocationName string `json:"locationName" bson:"locationName"`
 }
 
 type Area struct {
-	AreaId   int    `json:"areaId" bson:"areaId"`
+	AreaId   string `json:"areaId" bson:"areaId"`
 	AreaName string `json:"areaName" bson:"areaName"`
 }
 

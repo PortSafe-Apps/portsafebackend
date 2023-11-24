@@ -1,7 +1,6 @@
 package port
 
 import (
-	"context"
 	"encoding/json"
 	"net/http"
 	"os"
@@ -63,33 +62,46 @@ func Login(Privatekey, MongoEnv, dbname, Colname string, r *http.Request) string
 
 func GetDataUserForAdmin(PublicKey, MongoEnv, dbname, colname string, r *http.Request) string {
 	req := new(ResponseDataUser)
-	conn := SetConnection(MongoEnv, dbname)
+
+	// Periksa keberadaan header "Login"
 	tokenlogin := r.Header.Get("Login")
 	if tokenlogin == "" {
 		req.Status = false
-		req.Message = "Header Login Not Found"
-	} else {
-		cekadmin := IsAdmin(tokenlogin, PublicKey)
-		if !cekadmin {
-			req.Status = false
-			req.Message = "IHHH Kamu bukan admin"
-		}
-		checktoken, err := DecodeGetUser(os.Getenv(PublicKey), tokenlogin)
-		if err != nil {
-			req.Status = false
-			req.Message = "tidak ada data username : " + tokenlogin
-		}
-		compared := CompareNipp(conn, colname, checktoken)
-		if !compared {
-			req.Status = false
-			req.Message = "Data User tidak ada"
-		} else {
-			datauser := GetAllUser(conn, colname)
-			req.Status = true
-			req.Message = "data User berhasil diambil"
-			req.Data = datauser
-		}
+		req.Message = "Header Login Tidak Ditemukan"
+		return GCFReturnStruct(req)
 	}
+
+	// Periksa apakah pengguna adalah admin
+	cekadmin := IsAdmin(tokenlogin, PublicKey)
+	if !cekadmin {
+		req.Status = false
+		req.Message = "IHHH Kamu bukan admin"
+		return GCFReturnStruct(req)
+	}
+
+	// Decode token dan periksa kesalahan
+	checktoken, err := DecodeGetUser(os.Getenv(PublicKey), tokenlogin)
+	if err != nil {
+		req.Status = false
+		req.Message = "Tidak ada data username: " + tokenlogin
+		return GCFReturnStruct(req)
+	}
+
+	// Bandingkan Nipp
+	conn := SetConnection(MongoEnv, dbname)
+	compared := CompareNipp(conn, colname, checktoken)
+	if !compared {
+		req.Status = false
+		req.Message = "Data User tidak ada"
+		return GCFReturnStruct(req)
+	}
+
+	// Dapatkan semua pengguna
+	datauser := GetAllUser(conn, colname)
+	req.Status = true
+	req.Message = "Data Pengguna berhasil diambil"
+	req.Data = datauser
+
 	return GCFReturnStruct(req)
 }
 
@@ -149,6 +161,7 @@ func InsertReport(MongoEnv, dbname, colname, publickey string, r *http.Request) 
 	req := new(Report)
 	conn := SetConnection(MongoEnv, dbname)
 	tokenlogin := r.Header.Get("Login")
+
 	if tokenlogin == "" {
 		resp.Status = false
 		resp.Message = "Header Login Not Found"
@@ -165,54 +178,65 @@ func InsertReport(MongoEnv, dbname, colname, publickey string, r *http.Request) 
 			if err != nil {
 				resp.Message = "error parsing application/json: " + err.Error()
 			} else {
-				pass, err := HashPassword(req.Account.Password)
-				if err != nil {
+				// Mendapatkan data pengguna berdasarkan NIPP
+				user := GetUserByNipp(conn, req.Account.Nipp)
+				if user == nil {
 					resp.Status = false
-					resp.Message = "Gagal Hash Code"
+					resp.Message = "Pengguna tidak ditemukan"
+					return GCFReturnStruct(resp)
 				}
 
-				// Memilih sub jenis yang diinginkan (dalam hal ini, SubTypes[0])
-				selectedSubType := ""
-				if len(req.TypeDangerousActions.SubTypes) > 0 {
-					selectedSubType = req.TypeDangerousActions.SubTypes[0]
+				// Mendapatkan data area berdasarkan nama area
+				area := GetAreaByName(conn, req.Area.AreaName)
+				if area == nil {
+					resp.Status = false
+					resp.Message = "Area tidak ditemukan"
+					return GCFReturnStruct(resp)
 				}
 
-				// Membuat objek baru hanya dengan satu sub jenis yang dipilih
-				selectedTypeDangerousAction := TypeDangerousActions{
-					TypeId:   req.TypeDangerousActions.TypeId,
-					TypeName: req.TypeDangerousActions.TypeName,
-					SubTypes: []string{selectedSubType},
+				// Mendapatkan data lokasi berdasarkan nama lokasi
+				location := GetLocationByName(conn, req.Location.LocationName)
+				if location == nil {
+					resp.Status = false
+					resp.Message = "Lokasi tidak ditemukan"
+					return GCFReturnStruct(resp)
 				}
 
+				// Memilih lebih dari satu TypeDangerousActions
+				var selectedTypeDangerousActions []TypeDangerousActions
+				for _, tda := range req.TypeDangerousActions {
+					selectedTypeDangerousActions = append(selectedTypeDangerousActions, TypeDangerousActions{
+						TypeId:   tda.TypeId,
+						TypeName: tda.TypeName,
+						SubTypes: tda.SubTypes,
+					})
+				}
+
+				// Memasukkan data report ke dalam database
 				InsertDataReport(conn, colname, Report{
 					Reportid: req.Reportid,
 					Date:     req.Date,
 					Account: User{
-						Nipp:     req.Account.Nipp,
-						Nama:     req.Account.Nama,
-						Jabatan:  req.Account.Jabatan,
-						Divisi:   req.Account.Divisi,
-						Bidang:   req.Account.Bidang,
-						Password: pass,
-						Role:     req.Account.Role,
+						Nama:    user.Nama,
+						Jabatan: user.Jabatan,
+						Divisi:  user.Divisi,
 					},
 					Location: Location{
-						LocationId:   req.Location.LocationId,
-						LocationName: req.Location.LocationName,
+						LocationId:   location.LocationId,
+						LocationName: location.LocationName,
 					},
 					Description:          req.Description,
 					ObservationPhoto:     req.ObservationPhoto,
-					TypeDangerousActions: selectedTypeDangerousAction,
+					TypeDangerousActions: selectedTypeDangerousActions,
 					Area: Area{
-						AreaId:   req.Area.AreaId,
-						AreaName: req.Area.AreaName,
+						AreaId:   area.AreaId,
+						AreaName: area.AreaName,
 					},
 					ImmediateAction:  req.ImmediateAction,
 					ImprovementPhoto: req.ImprovementPhoto,
 					CorrectiveAction: req.CorrectiveAction,
 				})
 
-				InsertUserdata(conn, req.Account.Nipp, req.Account.Nama, req.Account.Jabatan, req.Account.Divisi, req.Account.Bidang, pass, req.Account.Role)
 				resp.Status = true
 				resp.Message = "Berhasil Insert data"
 			}
@@ -221,74 +245,74 @@ func InsertReport(MongoEnv, dbname, colname, publickey string, r *http.Request) 
 	return GCFReturnStruct(resp)
 }
 
-func UpdateDataReport(MongoEnv, dbname, publickey string, r *http.Request) string {
-	req := new(Credential)
-	resp := new(Report)
-	tokenlogin := r.Header.Get("Login")
-	if tokenlogin == "" {
-		req.Status = false
-		req.Message = "Header Login Not Found"
-	} else {
-		err := json.NewDecoder(r.Body).Decode(&resp)
-		if err != nil {
-			req.Message = "error parsing application/json: " + err.Error()
-		} else {
-			checkadmin := IsAdmin(tokenlogin, os.Getenv(publickey))
-			if !checkadmin {
-				checkUser := IsUser(tokenlogin, os.Getenv(publickey))
-				if !checkUser {
-					req.Status = false
-					req.Message = "Anda tidak bisa Insert data karena bukan HR atau admin"
-				}
-			} else {
-				// Memilih sub jenis yang diinginkan (dalam hal ini, SubTypes[0])
-				selectedSubType := ""
-				if len(resp.TypeDangerousActions.SubTypes) > 0 {
-					selectedSubType = resp.TypeDangerousActions.SubTypes[0]
-				}
+// func UpdateDataReport(MongoEnv, dbname, publickey string, r *http.Request) string {
+// 	req := new(Credential)
+// 	resp := new(Report)
+// 	tokenlogin := r.Header.Get("Login")
+// 	if tokenlogin == "" {
+// 		req.Status = false
+// 		req.Message = "Header Login Not Found"
+// 	} else {
+// 		err := json.NewDecoder(r.Body).Decode(&resp)
+// 		if err != nil {
+// 			req.Message = "error parsing application/json: " + err.Error()
+// 		} else {
+// 			checkadmin := IsAdmin(tokenlogin, os.Getenv(publickey))
+// 			if !checkadmin {
+// 				checkUser := IsUser(tokenlogin, os.Getenv(publickey))
+// 				if !checkUser {
+// 					req.Status = false
+// 					req.Message = "Anda tidak bisa Insert data karena bukan HR atau admin"
+// 				}
+// 			} else {
+// 				// Memilih sub jenis yang diinginkan (dalam hal ini, SubTypes[0])
+// 				selectedSubType := ""
+// 				if len(resp.TypeDangerousActions.SubTypes) > 0 {
+// 					selectedSubType = resp.TypeDangerousActions.SubTypes[0]
+// 				}
 
-				// Membuat objek baru hanya dengan satu sub jenis yang dipilih
-				selectedTypeDangerousAction := TypeDangerousActions{
-					TypeId:   resp.TypeDangerousActions.TypeId,
-					TypeName: resp.TypeDangerousActions.TypeName,
-					SubTypes: []string{selectedSubType},
-				}
+// 				// Membuat objek baru hanya dengan satu sub jenis yang dipilih
+// 				selectedTypeDangerousAction := TypeDangerousActions{
+// 					TypeId:   resp.TypeDangerousActions.TypeId,
+// 					TypeName: resp.TypeDangerousActions.TypeName,
+// 					SubTypes: []string{selectedSubType},
+// 				}
 
-				conn := SetConnection(MongoEnv, dbname)
-				UpdateReport(conn, context.Background(), Report{
-					Reportid: resp.Reportid,
-					Date:     resp.Date,
-					Account: User{
-						Nipp:     resp.Account.Nipp,
-						Nama:     resp.Account.Nama,
-						Jabatan:  resp.Account.Jabatan,
-						Divisi:   resp.Account.Divisi,
-						Bidang:   resp.Account.Bidang,
-						Password: resp.Account.Password,
-						Role:     resp.Account.Role,
-					},
-					Location: Location{
-						LocationId:   resp.Location.LocationId,
-						LocationName: resp.Location.LocationName,
-					},
-					Description:          resp.Description,
-					ObservationPhoto:     resp.ObservationPhoto,
-					TypeDangerousActions: selectedTypeDangerousAction,
-					Area: Area{
-						AreaId:   resp.Area.AreaId,
-						AreaName: resp.Area.AreaName,
-					},
-					ImmediateAction:  resp.ImmediateAction,
-					ImprovementPhoto: resp.ImprovementPhoto,
-					CorrectiveAction: resp.CorrectiveAction,
-				})
-				req.Status = true
-				req.Message = "Berhasil Update data"
-			}
-		}
-	}
-	return GCFReturnStruct(req)
-}
+// 				conn := SetConnection(MongoEnv, dbname)
+// 				UpdateReport(conn, context.Background(), Report{
+// 					Reportid: resp.Reportid,
+// 					Date:     resp.Date,
+// 					Account: User{
+// 						Nipp:     resp.Account.Nipp,
+// 						Nama:     resp.Account.Nama,
+// 						Jabatan:  resp.Account.Jabatan,
+// 						Divisi:   resp.Account.Divisi,
+// 						Bidang:   resp.Account.Bidang,
+// 						Password: resp.Account.Password,
+// 						Role:     resp.Account.Role,
+// 					},
+// 					Location: Location{
+// 						LocationId:   resp.Location.LocationId,
+// 						LocationName: resp.Location.LocationName,
+// 					},
+// 					Description:          resp.Description,
+// 					ObservationPhoto:     resp.ObservationPhoto,
+// 					TypeDangerousActions: selectedTypeDangerousAction,
+// 					Area: Area{
+// 						AreaId:   resp.Area.AreaId,
+// 						AreaName: resp.Area.AreaName,
+// 					},
+// 					ImmediateAction:  resp.ImmediateAction,
+// 					ImprovementPhoto: resp.ImprovementPhoto,
+// 					CorrectiveAction: resp.CorrectiveAction,
+// 				})
+// 				req.Status = true
+// 				req.Message = "Berhasil Update data"
+// 			}
+// 		}
+// 	}
+// 	return GCFReturnStruct(req)
+// }
 
 func GetOneReport(PublicKey, MongoEnv, dbname, colname string, r *http.Request) string {
 	req := new(ResponseReport)

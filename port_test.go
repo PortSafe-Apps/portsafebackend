@@ -80,8 +80,8 @@ func TestDecodeToken(t *testing.T) {
 
 func TestCompareNipp(t *testing.T) {
 	conn := SetConnection("MONGOULBI", "portsafedb")
-	deco := watoken.DecodeGetId("d5555cce6e6fec600b838c7e5a973cffce4e35d12865cc0b5c49ba5c44a5f468",
-		"v4.public.eyJleHAiOiIyMDIzLTExLTI0VDEwOjM1OjA0KzA3OjAwIiwiaWF0IjoiMjAyMy0xMS0yNFQwODozNTowNCswNzowMCIsImlkIjoiYWRtaW4xMjMiLCJuYmYiOiIyMDIzLTExLTI0VDA4OjM1OjA0KzA3OjAwIn0aI88_TB-piGTEw0WfTJSC2ND4FYjHrOEohMc_2BZfBE72ldtFWoyR-I94VNJpokFKvAB51DMYinQ85IVJrEMC")
+	deco := watoken.DecodeGetId("b54ae23b069e6cfc80a13fae9a3bbfebd44e2c3697bf320e130da8095b42add2",
+		"v4.public.eyJleHAiOiIyMDIzLTExLTI0VDE3OjU2OjI1KzA3OjAwIiwiaWF0IjoiMjAyMy0xMS0yNFQxNTo1NjoyNSswNzowMCIsImlkIjoiYWRtaW4xMjMiLCJuYmYiOiIyMDIzLTExLTI0VDE1OjU2OjI1KzA3OjAwIn33TQ7IrWyWx8O3soRnTAB4iiI0uQobh7A9DN8G-s4m_40vAOGWc5Qtf8BUwiV7jNYP5Asp6CJTlRnEj6DdNxAP")
 	compare := CompareNipp(conn, "user", deco)
 	fmt.Println(compare)
 }
