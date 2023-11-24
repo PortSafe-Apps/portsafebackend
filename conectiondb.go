@@ -88,7 +88,7 @@ func InsertDataReport(MongoConn *mongo.Database, colname string, rpt Report) (In
 	req.Reportid = rpt.Reportid
 	req.Date = rpt.Date
 	req.Account = rpt.Account
-	req.IncidentLocation = rpt.IncidentLocation
+	req.Location = rpt.Location
 	req.Description = rpt.Description
 	req.ObservationPhoto = rpt.ObservationPhoto
 	req.TypeDangerousActions = rpt.TypeDangerousActions

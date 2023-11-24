@@ -196,7 +196,10 @@ func InsertReport(MongoEnv, dbname, colname, publickey string, r *http.Request) 
 						Password: pass,
 						Role:     req.Account.Role,
 					},
-					IncidentLocation:     req.IncidentLocation,
+					Location: Location{
+						LocationId:   req.Location.LocationId,
+						LocationName: req.Location.LocationName,
+					},
 					Description:          req.Description,
 					ObservationPhoto:     req.ObservationPhoto,
 					TypeDangerousActions: selectedTypeDangerousAction,
@@ -264,7 +267,10 @@ func UpdateDataReport(MongoEnv, dbname, publickey string, r *http.Request) strin
 						Password: resp.Account.Password,
 						Role:     resp.Account.Role,
 					},
-					IncidentLocation:     resp.IncidentLocation,
+					Location: Location{
+						LocationId:   resp.Location.LocationId,
+						LocationName: resp.Location.LocationName,
+					},
 					Description:          resp.Description,
 					ObservationPhoto:     resp.ObservationPhoto,
 					TypeDangerousActions: selectedTypeDangerousAction,

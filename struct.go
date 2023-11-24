@@ -53,7 +53,7 @@ type Report struct {
 	Reportid             string               `json:"reportid" bson:"reportid"`
 	Date                 string               `json:"date" bson:"date"`
 	Account              User                 `json:"user" bson:"user,omitempty"`
-	IncidentLocation     string               `json:"incidentLocation" bson:"incidentLocation"`
+	Location             Location             `json:"location" bson:"location"`
 	Description          string               `json:"description" bson:"description"`
 	ObservationPhoto     string               `json:"observationPhoto" bson:"observationPhoto"`
 	TypeDangerousActions TypeDangerousActions `json:"typeDangerousActions" bson:"typeDangerousActions,omitempty"`
@@ -67,6 +67,11 @@ type TypeDangerousActions struct {
 	TypeId   int      `json:"typeId" bson:"typeId"`
 	TypeName string   `json:"typeName" bson:"typeName"`
 	SubTypes []string `json:"subTypes" bson:"subTypes"`
+}
+
+type Location struct {
+	LocationId   int    `json:"locationId" bson:"locationId"`
+	LocationName string `json:"locationName" bson:"locationName"`
 }
 
 type Area struct {
