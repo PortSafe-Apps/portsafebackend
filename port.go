@@ -187,6 +187,13 @@ func InsertReport(MongoEnv, dbname, colname, publickey string, r *http.Request) 
 					return GCFReturnStruct(resp)
 				}
 
+				// Memastikan bahwa data Nama dan Nipp pada Report sesuai dengan data pengguna
+				if req.Account.Nipp != user.Nipp || req.Account.Nama != user.Nama {
+				    	resp.Status = false
+				    	resp.Message = "Data Nama atau NIPP pada laporan tidak sesuai dengan data pengguna"
+				    	return GCFReturnStruct(resp)
+				}
+
 				// Mendapatkan data area berdasarkan nama area
 				area := GetAreaByName(conn, req.Area.AreaName)
 				if area == nil {
@@ -215,13 +222,14 @@ func InsertReport(MongoEnv, dbname, colname, publickey string, r *http.Request) 
 
 				// Memasukkan data report ke dalam database
 				InsertDataReport(conn, colname, Report{
-					Reportid: req.Reportid,
-					Date:     req.Date,
-					Account: User{
-						Nama:    user.Nama,
-						Jabatan: user.Jabatan,
-						Divisi:  user.Divisi,
-					},
+			                	Reportid: req.Reportid,
+			                	Date:     req.Date,
+			                	Account: User{
+			               	 	Nama:    user.Nama,
+			               	 	Jabatan: user.Jabatan,
+			                	Divisi:  user.Divisi,
+			                	Nipp:    user.Nipp,
+			                },
 					Location: Location{
 						LocationId:   location.LocationId,
 						LocationName: location.LocationName,
