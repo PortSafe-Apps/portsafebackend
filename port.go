@@ -161,6 +161,7 @@ func InsertReport(MongoEnv, dbname, colname, publickey string, r *http.Request) 
 	req := new(Report)
 	conn := SetConnection(MongoEnv, dbname)
 	tokenlogin := r.Header.Get("Login")
+	fmt.Println("Token Login:", tokenlogin)
 
 	if tokenlogin == "" {
 		resp.Status = false
