@@ -64,7 +64,7 @@ type Report struct {
 }
 
 type TypeDangerousActions struct {
-	TypeId   int      `json:"typeId" bson:"typeId"`
+	TypeId   string   `json:"typeId" bson:"typeId"`
 	TypeName string   `json:"typeName" bson:"typeName"`
 	SubTypes []string `json:"subTypes" bson:"subTypes"`
 }

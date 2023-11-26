@@ -83,17 +83,8 @@ func CompareNipp(MongoConn *mongo.Database, Colname, nipp string) bool {
 	return user != ""
 }
 
-func GetUserByNipp(MongoConn *mongo.Database, nipp string) *User {
-	collection := MongoConn.Collection("user")
-	filter := bson.D{{Key: "nipp", Value: nipp}}
-
-	var user User
-	err := collection.FindOne(context.Background(), filter).Decode(&user)
-	if err != nil {
-		// Handle error, misalnya return nil atau tindakan lain yang sesuai
-		return nil
-	}
-
+func GetUserByNipp(MongoConn *mongo.Database, colname, nipp string) *User {
+	user := GetOneUser(MongoConn, colname, User{Nipp: nipp})
 	return &user
 }
 
