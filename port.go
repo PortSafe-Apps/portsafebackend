@@ -74,21 +74,20 @@ func GetDataUserForAdmin(PublicKey, MongoEnv, dbname, colname string, r *http.Re
 			if !checkUser {
 				req.Status = false
 				req.Message = "Anda tidak bisa Insert data karena bukan user atau admin"
+			}
+			user, err := DecodeGetUser(PublicKey, tokenlogin)
+			if err != nil {
+				req.Status = false
+				req.Message = "Tidak ada data User: " + tokenlogin
+			}
+			datauser := GetOneUser(conn, colname, User{Nipp: user})
+			if datauser.Nipp == "" {
+				req.Status = false
+				req.Message = "Data User tidak ada"
 			} else {
-				user, err := DecodeGetUser(PublicKey, tokenlogin)
-				if err != nil {
-					req.Status = false
-					req.Message = "Tidak ada data User: " + tokenlogin
-				}
-				datauser := GetOneUser(conn, colname, User{Nipp: user})
-				if datauser.Nipp == "" {
-					req.Status = false
-					req.Message = "Data User tidak ada"
-				} else {
-					req.Status = true
-					req.Message = "Data User berhasil diambil"
-					req.Data = append(req.Data, datauser)
-				}
+				req.Status = true
+				req.Message = "Data User berhasil diambil"
+				req.Data = append(req.Data, datauser)
 			}
 		}
 	}
