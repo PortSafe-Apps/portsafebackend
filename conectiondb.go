@@ -38,6 +38,12 @@ func GetOneUser(MongoConn *mongo.Database, colname string, userdata User) User {
 	return data
 }
 
+func GetOneUserByNipp(MongoConn *mongo.Database, colname string, nipp string) (User, error) {
+	filter := bson.M{"nipp": nipp}
+	data := atdb.GetOneDoc[User](MongoConn, colname, filter)
+	return data, nil
+}
+
 func InsertUserdata(MongoConn *mongo.Database, nipp, nama, jabatan, divisi, bidang, password, role string) (InsertedID interface{}) {
 	req := new(User)
 	req.Nipp = nipp

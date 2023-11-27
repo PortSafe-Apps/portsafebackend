@@ -84,10 +84,8 @@ func GetDataUserForAdmin(MongoEnv, PublicKey, dbname, colname string, r *http.Re
 			req.Status = false
 			req.Message = "tidak ada data NIPP : " + tokenlogin
 		} else {
-			// Menggunakan fungsi GetOneUser untuk mendapatkan satu data pengguna berdasarkan NIPP
-			datauser := GetOneUser(conn, colname, User{Nipp: checktoken.Nipp})
-
-			if datauser.Nipp == "" {
+			datauser, err := GetOneUserByNipp(conn, colname, checktoken.Nipp)
+			if err != nil {
 				req.Status = false
 				req.Message = "Data User tidak ada"
 			} else {
