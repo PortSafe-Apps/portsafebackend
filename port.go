@@ -60,48 +60,39 @@ func Login(Privatekey, MongoEnv, dbname, Colname string, r *http.Request) string
 	return GCFReturnStruct(resp)
 }
 
-func GetDataUserForAdmin(MongoEnv, PublicKey, dbname, colname string, r *http.Request) (*ResponseDataUser, error) {
+func GetDataUserForAdmin(PublicKey, MongoEnv, dbname, colname string, r *http.Request) string {
 	req := new(ResponseDataUser)
+	conn := SetConnection(MongoEnv, dbname)
 	tokenlogin := r.Header.Get("Login")
-
 	if tokenlogin == "" {
 		req.Status = false
 		req.Message = "Header Login Not Found"
-		return req, nil
-	}
-
-	conn := SetConnection(MongoEnv, dbname)
-
-	checkadmin := IsAdmin(tokenlogin, os.Getenv(PublicKey))
-	if !checkadmin {
-		checkUser := IsUser(tokenlogin, os.Getenv(PublicKey))
-		if !checkUser {
-			req.Status = false
-			req.Message = "Anda tidak bisa get data karena bukan user atau admin"
-			return req, nil
+	} else {
+		checkadmin := IsAdmin(tokenlogin, os.Getenv(PublicKey))
+		if !checkadmin {
+			checkUser := IsUser(tokenlogin, os.Getenv(PublicKey))
+			if !checkUser {
+				req.Status = false
+				req.Message = "Anda tidak bisa Insert data karena bukan user atau admin"
+			} else {
+				user, err := DecodeGetUser(PublicKey, tokenlogin)
+				if err != nil {
+					req.Status = false
+					req.Message = "Tidak ada data User: " + tokenlogin
+				}
+				datauser := GetOneUser(conn, colname, User{Nipp: user})
+				if datauser.Nipp == "" {
+					req.Status = false
+					req.Message = "Data User tidak ada"
+				} else {
+					req.Status = true
+					req.Message = "Data User berhasil diambil"
+					req.Data = append(req.Data, datauser)
+				}
+			}
 		}
 	}
-
-	checktoken, err := DecodeGetUser(os.Getenv(PublicKey), tokenlogin)
-	if err != nil {
-		req.Status = false
-		req.Message = "tidak ada data User: " + tokenlogin
-		return req, nil
-	}
-
-	// Remove the attempt to dereference checktoken
-	datauser := GetOneUser(conn, colname, User{Nipp: checktoken})
-	if datauser.Nipp == "" {
-		req.Status = false
-		req.Message = "Data User tidak ada"
-		return req, nil
-	}
-
-	req.Status = true
-	req.Message = "data User berhasil diambil"
-	req.Data = append(req.Data, datauser)
-
-	return req, nil
+	return GCFReturnStruct(req)
 }
 
 func DeleteUserforAdmin(Mongoenv, publickey, dbname, colname string, r *http.Request) string {
@@ -183,7 +174,6 @@ func InsertReport(MongoEnv, dbname, colname, publickey string, r *http.Request) 
 						resp.Message = "Tidak ada data pengguna untuk token: " + tokenlogin
 						return GCFReturnStruct(resp)
 					}
-
 					// Mendapatkan data area berdasarkan nama area
 					area := GetAreaByName(conn, req.Area.AreaName)
 					if area == nil {
