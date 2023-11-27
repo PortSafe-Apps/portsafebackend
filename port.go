@@ -109,7 +109,7 @@ func DeleteUserforAdmin(Mongoenv, publickey, dbname, colname string, r *http.Req
 			resp.Status = fiber.StatusInternalServerError
 			resp.Message = "kamu bukan admin"
 		} else {
-			_, err := DeleteUser(conn, colname, req.Username)
+			_, err := DeleteUser(conn, colname, req.Nipp)
 			if err != nil {
 				resp.Status = fiber.StatusBadRequest
 				resp.Message = "gagal hapus data"

@@ -97,7 +97,7 @@ type Cred struct {
 }
 
 type ReqUsers struct {
-	Username string `json:"username"`
+	Nipp string `json:"nipp"`
 }
 
 type RequestReport struct {
