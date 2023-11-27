@@ -95,56 +95,56 @@ func GetDataUserForAdmin(PublicKey, MongoEnv, dbname, colname string, r *http.Re
 	return GCFReturnStruct(req)
 }
 
-// func DeleteUserforAdmin(Mongoenv, publickey, dbname, colname string, r *http.Request) string {
-// 	resp := new(Cred)
-// 	req := new(ReqUsers)
-// 	conn := SetConnection(Mongoenv, dbname)
-// 	tokenlogin := r.Header.Get("Login")
-// 	if tokenlogin == "" {
-// 		resp.Status = fiber.StatusBadRequest
-// 		resp.Message = "Token login tidak ada"
-// 	} else {
-// 		checkadmin := IsAdmin(tokenlogin, os.Getenv(publickey))
-// 		if !checkadmin {
-// 			resp.Status = fiber.StatusInternalServerError
-// 			resp.Message = "kamu bukan admin"
-// 		} else {
-// 			_, err := DeleteUser(conn, colname, req.Nipp)
-// 			if err != nil {
-// 				resp.Status = fiber.StatusBadRequest
-// 				resp.Message = "gagal hapus data"
-// 			}
-// 			resp.Status = fiber.StatusOK
-// 			resp.Message = "data berhasil dihapus"
-// 		}
-// 	}
-// 	return GCFReturnStruct(resp)
-// }
+func DeleteUserforAdmin(Mongoenv, publickey, dbname, colname string, r *http.Request) string {
+	resp := new(Cred)
+	req := new(ReqUsers)
+	conn := SetConnection(Mongoenv, dbname)
+	tokenlogin := r.Header.Get("Login")
+	if tokenlogin == "" {
+		resp.Status = fiber.StatusBadRequest
+		resp.Message = "Token login tidak ada"
+	} else {
+		checkadmin := IsAdmin(tokenlogin, os.Getenv(publickey))
+		if !checkadmin {
+			resp.Status = fiber.StatusInternalServerError
+			resp.Message = "kamu bukan admin"
+		} else {
+			_, err := DeleteUser(conn, colname, req.Nipp)
+			if err != nil {
+				resp.Status = fiber.StatusBadRequest
+				resp.Message = "gagal hapus data"
+			}
+			resp.Status = fiber.StatusOK
+			resp.Message = "data berhasil dihapus"
+		}
+	}
+	return GCFReturnStruct(resp)
+}
 
-// func ResetPassword(MongoEnv, publickey, dbname, colname string, r *http.Request) string {
-// 	resp := new(Cred)
-// 	req := new(User)
-// 	conn := SetConnection(MongoEnv, dbname)
-// 	tokenlogin := r.Header.Get("Login")
-// 	if tokenlogin == "" {
-// 		resp.Status = fiber.StatusBadRequest
-// 		resp.Message = "Token login tidak ada"
-// 	} else {
-// 		checkadmin := IsAdmin(tokenlogin, os.Getenv(publickey))
-// 		if !checkadmin {
-// 			resp.Status = fiber.StatusInternalServerError
-// 			resp.Message = "kamu bukan admin"
-// 		} else {
-// 			UpdatePassword(conn, User{
-// 				Nipp:     req.Nipp,
-// 				Password: req.Password,
-// 			})
-// 			resp.Status = fiber.StatusOK
-// 			resp.Message = "Berhasil reset password"
-// 		}
-// 	}
-// 	return GCFReturnStruct(resp)
-// }
+func ResetPassword(MongoEnv, publickey, dbname, colname string, r *http.Request) string {
+	resp := new(Cred)
+	req := new(User)
+	conn := SetConnection(MongoEnv, dbname)
+	tokenlogin := r.Header.Get("Login")
+	if tokenlogin == "" {
+		resp.Status = fiber.StatusBadRequest
+		resp.Message = "Token login tidak ada"
+	} else {
+		checkadmin := IsAdmin(tokenlogin, os.Getenv(publickey))
+		if !checkadmin {
+			resp.Status = fiber.StatusInternalServerError
+			resp.Message = "kamu bukan admin"
+		} else {
+			UpdatePassword(conn, User{
+				Nipp:     req.Nipp,
+				Password: req.Password,
+			})
+			resp.Status = fiber.StatusOK
+			resp.Message = "Berhasil reset password"
+		}
+	}
+	return GCFReturnStruct(resp)
+}
 
 func InsertReport(MongoEnv, dbname, colname, publickey string, r *http.Request) string {
 	resp := new(Credential)
