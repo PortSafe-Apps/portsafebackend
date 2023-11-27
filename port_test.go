@@ -73,15 +73,15 @@ func TestInsertUserdata(t *testing.T) {
 }
 
 func TestDecodeToken(t *testing.T) {
-	deco := watoken.DecodeGetId("d5555cce6e6fec600b838c7e5a973cffce4e35d12865cc0b5c49ba5c44a5f468",
-		"v4.public.eyJleHAiOiIyMDIzLTExLTI0VDEwOjM1OjA0KzA3OjAwIiwiaWF0IjoiMjAyMy0xMS0yNFQwODozNTowNCswNzowMCIsImlkIjoiYWRtaW4xMjMiLCJuYmYiOiIyMDIzLTExLTI0VDA4OjM1OjA0KzA3OjAwIn0aI88_TB-piGTEw0WfTJSC2ND4FYjHrOEohMc_2BZfBE72ldtFWoyR-I94VNJpokFKvAB51DMYinQ85IVJrEMC")
+	deco := watoken.DecodeGetId("ae158757a3ed7870ab7cb1dae3719d6c54d013a2817a7788f30c8a28f5c4398a",
+		"v4.public.eyJleHAiOiIyMDIzLTExLTI4VDA4OjA5OjQ0KzA3OjAwIiwiaWF0IjoiMjAyMy0xMS0yOFQwNjowOTo0NCswNzowMCIsImlkIjoiMTIwNDA0NCIsIm5iZiI6IjIwMjMtMTEtMjhUMDY6MDk6NDQrMDc6MDAifc2wc8yy7lbfDK06ie3H_SfcueGdXyEwDzR8CTV2e0m3AEVXpfuQMtvTwLYdSp-Si_U4k1elA0qGR7Wz0P4WEAI")
 	fmt.Println(deco)
 }
 
 func TestCompareNipp(t *testing.T) {
 	conn := SetConnection("MONGOULBI", "portsafedb")
-	deco := watoken.DecodeGetId("b54ae23b069e6cfc80a13fae9a3bbfebd44e2c3697bf320e130da8095b42add2",
-		"v4.public.eyJleHAiOiIyMDIzLTExLTI0VDE3OjU2OjI1KzA3OjAwIiwiaWF0IjoiMjAyMy0xMS0yNFQxNTo1NjoyNSswNzowMCIsImlkIjoiYWRtaW4xMjMiLCJuYmYiOiIyMDIzLTExLTI0VDE1OjU2OjI1KzA3OjAwIn33TQ7IrWyWx8O3soRnTAB4iiI0uQobh7A9DN8G-s4m_40vAOGWc5Qtf8BUwiV7jNYP5Asp6CJTlRnEj6DdNxAP")
+	deco := watoken.DecodeGetId("ae158757a3ed7870ab7cb1dae3719d6c54d013a2817a7788f30c8a28f5c4398a",
+		"v4.public.eyJleHAiOiIyMDIzLTExLTI4VDA4OjA5OjQ0KzA3OjAwIiwiaWF0IjoiMjAyMy0xMS0yOFQwNjowOTo0NCswNzowMCIsImlkIjoiMTIwNDA0NCIsIm5iZiI6IjIwMjMtMTEtMjhUMDY6MDk6NDQrMDc6MDAifc2wc8yy7lbfDK06ie3H_SfcueGdXyEwDzR8CTV2e0m3AEVXpfuQMtvTwLYdSp-Si_U4k1elA0qGR7Wz0P4WEAI")
 	compare := CompareNipp(conn, "user", deco)
 	fmt.Println(compare)
 }
