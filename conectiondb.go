@@ -83,11 +83,6 @@ func CompareNipp(MongoConn *mongo.Database, Colname, nipp string) bool {
 	return user != ""
 }
 
-func GetUserByNipp(MongoConn *mongo.Database, colname, nipp string) *User {
-	user := GetOneUser(MongoConn, colname, User{Nipp: nipp})
-	return &user
-}
-
 func GetAreaByName(MongoConn *mongo.Database, areaName string) *Area {
 	collection := MongoConn.Collection("area")
 	filter := bson.D{{Key: "areaName", Value: areaName}}

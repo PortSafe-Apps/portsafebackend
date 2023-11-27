@@ -43,12 +43,14 @@ func Decoder(publickey, tokenstr string) (payload Payload, err error) {
 	return payload, nil
 }
 
-func DecodeGetUser(PublicKey, tokenStr string) (pay string, err error) {
+func DecodeGetUser(PublicKey, tokenStr string) (TokenClaims, error) {
+	var claims TokenClaims
 	key, err := Decoder(PublicKey, tokenStr)
 	if err != nil {
-		fmt.Println("Cannot decode the token", err.Error())
+		return claims, fmt.Errorf("cannot decode the token: %s", err.Error())
 	}
-	return key.User, nil
+	claims.NIPP = key.User
+	return claims, nil
 }
 
 func DecodeGetRole(PublicKey, tokenStr string) (pay string, err error) {

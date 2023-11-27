@@ -14,6 +14,13 @@ type User struct {
 	Role     string `json:"role,omitempty" bson:"role,omitempty"`
 }
 
+type TokenClaims struct {
+	NIPP    string `json:"nipp"`
+	Nama    string `json:"nama" bson:"nama"`
+	Jabatan string `json:"jabatan" bson:"jabatan"`
+	Divisi  string `json:"divisi" bson:"divisi"`
+}
+
 type Credential struct {
 	Status  bool   `json:"status" bson:"status"`
 	Token   string `json:"token,omitempty" bson:"token,omitempty"`
@@ -52,7 +59,7 @@ type ResponseBack struct {
 type Report struct {
 	Reportid             string                 `json:"reportid" bson:"reportid"`
 	Date                 string                 `json:"date" bson:"date"`
-	Account              User                   `json:"user" bson:"user,omitempty"`
+	User                 User                   `json:"user" bson:"user,omitempty"`
 	Location             Location               `json:"location" bson:"location"`
 	Description          string                 `json:"description" bson:"description"`
 	ObservationPhoto     string                 `json:"observationPhoto" bson:"observationPhoto"`

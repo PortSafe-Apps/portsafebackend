@@ -60,14 +60,17 @@ func Login(Privatekey, MongoEnv, dbname, Colname string, r *http.Request) string
 	return GCFReturnStruct(resp)
 }
 
-func GetDataUserForAdmin(PublicKey, MongoEnv, dbname, colname string, r *http.Request) string {
+func GetDataUserForAdmin(MongoEnv, PublicKey, dbname, colname string, r *http.Request) string {
 	req := new(ResponseDataUser)
-	conn := SetConnection(MongoEnv, dbname)
 	tokenlogin := r.Header.Get("Login")
+
 	if tokenlogin == "" {
 		req.Status = false
 		req.Message = "Header Login Not Found"
 	} else {
+		// Assuming MongoEnv is your MongoDB connection string
+		conn := SetConnection(MongoEnv, dbname)
+
 		checkadmin := IsAdmin(tokenlogin, os.Getenv(PublicKey))
 		if !checkadmin {
 			checkUser := IsUser(tokenlogin, os.Getenv(PublicKey))
@@ -80,18 +83,21 @@ func GetDataUserForAdmin(PublicKey, MongoEnv, dbname, colname string, r *http.Re
 		if err != nil {
 			req.Status = false
 			req.Message = "tidak ada data NIPP : " + tokenlogin
-		}
-		compared := CompareNipp(conn, colname, checktoken)
-		if !compared {
-			req.Status = false
-			req.Message = "Data User tidak ada"
 		} else {
-			datauser := GetAllUser(conn, colname)
-			req.Status = true
-			req.Message = "data User berhasil diambil"
-			req.Data = datauser
+			// Menggunakan fungsi GetOneUser untuk mendapatkan satu data pengguna berdasarkan NIPP
+			datauser := GetOneUser(conn, colname, User{Nipp: checktoken.NIPP})
+
+			if datauser.Nipp == "" {
+				req.Status = false
+				req.Message = "Data User tidak ada"
+			} else {
+				req.Status = true
+				req.Message = "data User berhasil diambil"
+				req.Data = append(req.Data, datauser)
+			}
 		}
 	}
+
 	return GCFReturnStruct(req)
 }
 
@@ -165,15 +171,13 @@ func InsertReport(MongoEnv, dbname, colname, publickey string, r *http.Request) 
 			} else {
 				err := json.NewDecoder(r.Body).Decode(&req)
 				if err != nil {
-					resp.Message = "error parsing application/json: " + err.Error()
+					resp.Status = false
+					resp.Message = "Error parsing application/json: " + err.Error()
 				} else {
-					// Mendapatkan data pengguna berdasarkan NIPP
-					user := GetUserByNipp(conn, tokenlogin, publickey)
-
-					// Memeriksa apakah pengguna ditemukan
-					if user == nil {
+					user, err := DecodeGetUser(os.Getenv(publickey), tokenlogin)
+					if err != nil {
 						resp.Status = false
-						resp.Message = "Pengguna tidak ditemukan"
+						resp.Message = "Tidak ada data pengguna untuk token: " + tokenlogin
 						return GCFReturnStruct(resp)
 					}
 
@@ -207,7 +211,7 @@ func InsertReport(MongoEnv, dbname, colname, publickey string, r *http.Request) 
 					InsertDataReport(conn, colname, Report{
 						Reportid: req.Reportid,
 						Date:     req.Date,
-						Account: User{
+						User: User{
 							Nama:    user.Nama,
 							Jabatan: user.Jabatan,
 							Divisi:  user.Divisi,
