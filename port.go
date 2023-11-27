@@ -68,7 +68,6 @@ func GetDataUserForAdmin(MongoEnv, PublicKey, dbname, colname string, r *http.Re
 		req.Status = false
 		req.Message = "Header Login Not Found"
 	} else {
-		// Assuming MongoEnv is your MongoDB connection string
 		conn := SetConnection(MongoEnv, dbname)
 
 		checkadmin := IsAdmin(tokenlogin, os.Getenv(PublicKey))
@@ -79,6 +78,7 @@ func GetDataUserForAdmin(MongoEnv, PublicKey, dbname, colname string, r *http.Re
 				req.Message = "Anda tidak bisa get data karena bukan user atau admin"
 			}
 		}
+
 		checktoken, err := DecodeGetUser(os.Getenv(PublicKey), tokenlogin)
 		if err != nil {
 			req.Status = false

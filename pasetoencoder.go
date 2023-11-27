@@ -44,13 +44,22 @@ func Decoder(publickey, tokenstr string) (payload Payload, err error) {
 }
 
 func DecodeGetUser(PublicKey, tokenStr string) (User, error) {
-	var claims User
+	var decodedUser User
+
 	key, err := Decoder(PublicKey, tokenStr)
 	if err != nil {
-		return claims, fmt.Errorf("cannot decode the token: %s", err.Error())
+		fmt.Println("Cannot decode the token", err.Error())
+		return decodedUser, err
 	}
-	claims.Nipp = key.User
-	return claims, nil
+
+	// Assuming key.User contains a JSON representation of User
+	err = json.Unmarshal([]byte(key.User), &decodedUser)
+	if err != nil {
+		fmt.Println("Cannot unmarshal user data", err.Error())
+		return decodedUser, err
+	}
+
+	return decodedUser, nil
 }
 
 func DecodeGetRole(PublicKey, tokenStr string) (pay string, err error) {
