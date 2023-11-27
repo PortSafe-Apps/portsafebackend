@@ -7,14 +7,14 @@ import (
 	"github.com/whatsauth/watoken"
 )
 
-var publickeyb = "57f34b9441758a1e76f0e04b2ffe6a3b808477a92a9298180ea7364869580c1c"
-var encode = "v4.public.eyJleHAiOiIyMDIzLTExLTIzVDIxOjQxOjQ2KzA3OjAwIiwiaWF0IjoiMjAyMy0xMS0yM1QxOTo0MTo0NiswNzowMCIsIm5iZiI6IjIwMjMtMTEtMjNUMTk6NDE6NDYrMDc6MDAiLCJyb2xlIjoiYWRtaW4iLCJ1c2VyIjoiYWRtaW4xMjMifQw74ocd_AN3prCazQAfA24_sJFKvSsO9D0PmYFWsSPK9AvWCDluDwxHMWTPqkOaFIMU6LIjsF9mlCD1UTc6TAw"
+var publickeyb = "91ef88946fdae61f2b84840429465979d8819749d9106e60644bb679cdd4bf89"
+var encode = "v4.public.eyJleHAiOiIyMDIzLTExLTI3VDExOjUxOjM2KzA3OjAwIiwiaWF0IjoiMjAyMy0xMS0yN1QwOTo1MTozNiswNzowMCIsIm5iZiI6IjIwMjMtMTEtMjdUMDk6NTE6MzYrMDc6MDAiLCJyb2xlIjoidXNlciIsInVzZXIiOiIxMjA0MDQ0In1IPcclWJ6kKnoZ1l70khDCo9WQ7-qwK3EgOgcQoev67WkYTkSWuPvqqaZ1EavUZ2qR8KrjeJ34JiKDSLn2RloP"
 
 func TestGenerateKeyPASETO(t *testing.T) {
 	privateKey, publicKey := watoken.GenerateKey()
 	fmt.Println(privateKey)
 	fmt.Println(publicKey)
-	hasil, err := watoken.Encode("admin", privateKey)
+	hasil, err := watoken.Encode("port", privateKey)
 	fmt.Println(hasil, err)
 }
 
@@ -27,10 +27,10 @@ func TestHashPass(t *testing.T) {
 }
 
 func TestHashFunc(t *testing.T) {
-	conn := SetConnection("MONGOSTRING", "HRMApp")
+	conn := SetConnection("MONGOULBI", "portsafedb")
 	userdata := new(User)
-	userdata.Nipp = "cihuy"
-	userdata.Password = "cihuypass"
+	userdata.Nipp = "1204044"
+	userdata.Password = "mawar123"
 
 	data := GetOneUser(conn, "user", User{
 		Nipp:     userdata.Nipp,
@@ -48,8 +48,8 @@ func TestTokenEncoder(t *testing.T) {
 	conn := SetConnection("MONGOULBI", "portsafedb")
 	privateKey, publicKey := watoken.GenerateKey()
 	userdata := new(User)
-	userdata.Nipp = "admin123"
-	userdata.Password = "portsafe"
+	userdata.Nipp = "1204044"
+	userdata.Password = "mawar123"
 
 	data := GetOneUser(conn, "user", User{
 		Nipp:     userdata.Nipp,
@@ -88,8 +88,8 @@ func TestCompareNipp(t *testing.T) {
 
 func TestEncodeWithRole(t *testing.T) {
 	privateKey, publicKey := watoken.GenerateKey()
-	role := "admin"
-	nipp := "admin123"
+	role := "user"
+	nipp := "1204044"
 	encoder, err := EncodeWithRole(role, nipp, privateKey)
 
 	fmt.Println(" error :", err)

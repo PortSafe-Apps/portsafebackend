@@ -14,13 +14,6 @@ type User struct {
 	Role     string `json:"role,omitempty" bson:"role,omitempty"`
 }
 
-type TokenClaims struct {
-	NIPP    string `json:"nipp"`
-	Nama    string `json:"nama" bson:"nama"`
-	Jabatan string `json:"jabatan" bson:"jabatan"`
-	Divisi  string `json:"divisi" bson:"divisi"`
-}
-
 type Credential struct {
 	Status  bool   `json:"status" bson:"status"`
 	Token   string `json:"token,omitempty" bson:"token,omitempty"`
