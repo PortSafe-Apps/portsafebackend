@@ -38,6 +38,20 @@ func GetOneUser(MongoConn *mongo.Database, colname string, userdata User) User {
 	return data
 }
 
+func GetOneUserByNipp(MongoConn *mongo.Database, colname, nipp string) (User, error) {
+	filter := bson.M{"nipp": nipp}
+	result := MongoConn.Collection(colname).FindOne(context.TODO(), filter)
+	if result.Err() != nil {
+		return User{}, result.Err()
+	}
+	var user User
+	if err := result.Decode(&user); err != nil {
+		return User{}, err
+	}
+
+	return user, nil
+}
+
 func InsertUserdata(MongoConn *mongo.Database, nipp, nama, jabatan, divisi, bidang, password, role string) (InsertedID interface{}) {
 	req := new(User)
 	req.Nipp = nipp
