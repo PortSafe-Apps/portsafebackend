@@ -60,7 +60,7 @@ func Login(Privatekey, MongoEnv, dbname, Colname string, r *http.Request) string
 	return GCFReturnStruct(resp)
 }
 
-func GetDataUserForAdmin(PublicKey, MongoEnv, dbname, colname string, r *http.Request) string {
+func GetDataUser(PublicKey, MongoEnv, dbname, colname string, r *http.Request) string {
 	req := new(ResponseDataUser)
 	conn := SetConnection(MongoEnv, dbname)
 	tokenlogin := r.Header.Get("Login")
