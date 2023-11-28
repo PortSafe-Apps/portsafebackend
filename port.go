@@ -158,90 +158,87 @@ func InsertDataReport(Publickey, MongoEnv, dbname, colname string, r *http.Reque
 		resp.Status = false
 		resp.Message = "Header Login Not Found"
 	} else {
-		checkadmin := IsAdmin(tokenlogin, os.Getenv(Publickey))
-		if !checkadmin {
-			checkUser := IsUser(tokenlogin, os.Getenv(Publickey))
-			if !checkUser {
+		checkUser := IsUser(tokenlogin, os.Getenv(Publickey))
+		if !checkUser {
+			resp.Status = false
+			resp.Message = "Anda tidak bisa Insert data karena bukan user atau admin"
+		} else {
+			err := json.NewDecoder(r.Body).Decode(&req)
+			if err != nil {
 				resp.Status = false
-				resp.Message = "Anda tidak bisa Insert data karena bukan user atau admin"
+				resp.Message = "Error parsing application/json: " + err.Error()
 			} else {
-				err := json.NewDecoder(r.Body).Decode(&req)
+				// Decode the user information from the token
+				checktoken, err := DecodeGetUser(os.Getenv(Publickey), tokenlogin)
 				if err != nil {
 					resp.Status = false
-					resp.Message = "Error parsing application/json: " + err.Error()
+					resp.Message = "Tidak ada data User: " + tokenlogin
 				} else {
-					// Decode the user information from the token
-					checktoken, err := DecodeGetUser(os.Getenv(Publickey), tokenlogin)
+					// Hapus blok perbandingan Nipp yang tidak diperlukan
+					if checktoken == "" {
+						resp.Status = false
+						resp.Message = "Token tidak berisi informasi user yang valid"
+						return GCFReturnStruct(resp)
+					}
+
+					// Get user information by Nipp
+					datauser, err := GetUserByNipp(conn, checktoken)
 					if err != nil {
 						resp.Status = false
-						resp.Message = "Tidak ada data User: " + tokenlogin
-					} else {
-						// Hapus blok perbandingan Nipp yang tidak diperlukan
-						if checktoken == "" {
-							resp.Status = false
-							resp.Message = "Token tidak berisi informasi user yang valid"
-							return GCFReturnStruct(resp)
-						}
-
-						// Get user information by Nipp
-						datauser, err := GetUserByNipp(conn, checktoken)
-						if err != nil {
-							resp.Status = false
-							resp.Message = "Error retrieving user information: " + err.Error()
-							return GCFReturnStruct(resp)
-						}
-
-						area := GetAreaByName(conn, req.Area.AreaName)
-						if area == nil {
-							resp.Status = false
-							resp.Message = "Area tidak ditemukan"
-							return GCFReturnStruct(resp)
-						}
-
-						location := GetLocationByName(conn, req.Location.LocationName)
-						if location == nil {
-							resp.Status = false
-							resp.Message = "Lokasi tidak ditemukan"
-							return GCFReturnStruct(resp)
-						}
-
-						var selectedTypeDangerousActions []TypeDangerousActions
-						for _, tda := range req.TypeDangerousActions {
-							selectedTypeDangerousActions = append(selectedTypeDangerousActions, TypeDangerousActions{
-								TypeId:   tda.TypeId,
-								TypeName: tda.TypeName,
-								SubTypes: tda.SubTypes,
-							})
-						}
-
-						// Insert report data into the "reporting" collection
-						InsertReport(conn, colname, Report{
-							Reportid: req.Reportid,
-							Date:     req.Date,
-							User: User{
-								Nama:    datauser.Nama,
-								Jabatan: datauser.Jabatan,
-								Divisi:  datauser.Divisi,
-							},
-							Location: Location{
-								LocationId:   location.LocationId,
-								LocationName: location.LocationName,
-							},
-							Description:          req.Description,
-							ObservationPhoto:     req.ObservationPhoto,
-							TypeDangerousActions: selectedTypeDangerousActions,
-							Area: Area{
-								AreaId:   area.AreaId,
-								AreaName: area.AreaName,
-							},
-							ImmediateAction:  req.ImmediateAction,
-							ImprovementPhoto: req.ImprovementPhoto,
-							CorrectiveAction: req.CorrectiveAction,
-						})
-
-						resp.Status = true
-						resp.Message = "Berhasil Insert data"
+						resp.Message = "Error retrieving user information: " + err.Error()
+						return GCFReturnStruct(resp)
 					}
+
+					area := GetAreaByName(conn, req.Area.AreaName)
+					if area == nil {
+						resp.Status = false
+						resp.Message = "Area tidak ditemukan"
+						return GCFReturnStruct(resp)
+					}
+
+					location := GetLocationByName(conn, req.Location.LocationName)
+					if location == nil {
+						resp.Status = false
+						resp.Message = "Lokasi tidak ditemukan"
+						return GCFReturnStruct(resp)
+					}
+
+					var selectedTypeDangerousActions []TypeDangerousActions
+					for _, tda := range req.TypeDangerousActions {
+						selectedTypeDangerousActions = append(selectedTypeDangerousActions, TypeDangerousActions{
+							TypeId:   tda.TypeId,
+							TypeName: tda.TypeName,
+							SubTypes: tda.SubTypes,
+						})
+					}
+
+					// Insert report data into the "reporting" collection
+					InsertReport(conn, colname, Report{
+						Reportid: req.Reportid,
+						Date:     req.Date,
+						User: User{
+							Nama:    datauser.Nama,
+							Jabatan: datauser.Jabatan,
+							Divisi:  datauser.Divisi,
+						},
+						Location: Location{
+							LocationId:   location.LocationId,
+							LocationName: location.LocationName,
+						},
+						Description:          req.Description,
+						ObservationPhoto:     req.ObservationPhoto,
+						TypeDangerousActions: selectedTypeDangerousActions,
+						Area: Area{
+							AreaId:   area.AreaId,
+							AreaName: area.AreaName,
+						},
+						ImmediateAction:  req.ImmediateAction,
+						ImprovementPhoto: req.ImprovementPhoto,
+						CorrectiveAction: req.CorrectiveAction,
+					})
+
+					resp.Status = true
+					resp.Message = "Berhasil Insert data"
 				}
 			}
 		}
