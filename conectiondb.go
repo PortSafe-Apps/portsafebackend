@@ -111,19 +111,20 @@ func GetLocationByName(MongoConn *mongo.Database, locationName string) *Location
 	return &location
 }
 
-func InsertDataReport(MongoConn *mongo.Database, colname string, rpt Report) (InsertedID interface{}, err error) {
-	// Mengakses collection dengan nama yang diberikan
-	collection := MongoConn.Collection(colname)
-
-	// Menyisipkan dokumen ke dalam collection
-	result, err := collection.InsertOne(context.Background(), rpt)
-	if err != nil {
-		// Handle error, misalnya return nil atau tindakan lain yang sesuai
-		return nil, err
-	}
-
-	// Mengembalikan ID yang disisipkan sebagai referensi
-	return result.InsertedID, nil
+func InsertReport(MongoConn *mongo.Database, colname string, rpt Report) (InsertedID interface{}) {
+	req := new(Report)
+	req.Reportid = rpt.Reportid
+	req.Date = rpt.Date
+	req.User = rpt.User
+	req.Location = rpt.Location
+	req.Description = rpt.Description
+	req.ObservationPhoto = rpt.ObservationPhoto
+	req.TypeDangerousActions = rpt.TypeDangerousActions
+	req.Area = rpt.Area
+	req.ImmediateAction = rpt.ImmediateAction
+	req.ImprovementPhoto = rpt.ImprovementPhoto
+	req.CorrectiveAction = rpt.CorrectiveAction
+	return InsertOneDoc(MongoConn, colname, req)
 }
 
 func UpdateReport(Mongoconn *mongo.Database, ctx context.Context, emp Report) (UpdateId interface{}, err error) {

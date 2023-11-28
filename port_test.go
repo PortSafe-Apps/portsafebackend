@@ -74,7 +74,7 @@ func TestInsertUserdata(t *testing.T) {
 
 func TestDecodeToken(t *testing.T) {
 	deco := watoken.DecodeGetId("04398ef82ed3594b1201c632103179b635694a447c88b08ef939c16c4b29433a",
-		"v4.public.eyJleHAiOiIyMDIzLTExLTI4VDEwOjQxOjUwKzA3OjAwIiwiaWF0IjoiMjAyMy0xMS0yOFQwODo0MTo1MCswNzowMCIsImlkIjoiMTIwNDA0NCIsIm5iZiI6IjIwMjMtMTEtMjhUMDg6NDE6NTArMDc6MDAifVx2gcN0nOa6Q_4qQOuUvEUYdP8tSynlzBvZpASr261o-X4LcJRIFNQvg91tZEm5dD6blqCUGLz2Q2H_zkY0Mw4")
+		"v4.public.eyJleHAiOiIyMDIzLTExLTI4VDA1OjI0OjIwWiIsImlhdCI6IjIwMjMtMTEtMjhUMDM6MjQ6MjBaIiwibmJmIjoiMjAyMy0xMS0yOFQwMzoyNDoyMFoiLCJyb2xlIjoiYWRtaW4iLCJ1c2VyIjoiYWRtaW4xMjMifc1kK42KCxCeIGNhh0MCTD8oImcBxP5ZfTeOg5HLTALb95_gcAUtXQwoIprrdmD3OoJfpSRLYSOZarZcHs9xmgU")
 	fmt.Println(deco)
 }
 

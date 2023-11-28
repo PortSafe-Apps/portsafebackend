@@ -147,7 +147,7 @@ func ResetPassword(MongoEnv, publickey, dbname, colname string, r *http.Request)
 	return GCFReturnStruct(resp)
 }
 
-func InsertReport(PublicKey, MongoEnv, dbname, colname string, r *http.Request) string {
+func InsertDataReport(Publickey, MongoEnv, dbname, colname string, r *http.Request) string {
 	resp := new(Credential)
 	req := new(Report)
 	conn := SetConnection(MongoEnv, dbname)
@@ -157,10 +157,9 @@ func InsertReport(PublicKey, MongoEnv, dbname, colname string, r *http.Request) 
 		resp.Status = false
 		resp.Message = "Header Login Not Found"
 	} else {
-		checkadmin := IsAdmin(tokenlogin, os.Getenv(PublicKey))
+		checkadmin := IsAdmin(tokenlogin, os.Getenv(Publickey))
 		if !checkadmin {
-			checkUser := IsUser(tokenlogin, os.Getenv(PublicKey))
-
+			checkUser := IsUser(tokenlogin, os.Getenv(Publickey))
 			if !checkUser {
 				resp.Status = false
 				resp.Message = "Anda tidak bisa Insert data karena bukan user atau admin"
@@ -171,7 +170,7 @@ func InsertReport(PublicKey, MongoEnv, dbname, colname string, r *http.Request) 
 					resp.Message = "Error parsing application/json: " + err.Error()
 				} else {
 					// Decode the user information from the token
-					checktoken, err := DecodeGetUser(os.Getenv(PublicKey), tokenlogin)
+					checktoken, err := DecodeGetUser(os.Getenv(Publickey), tokenlogin)
 					if err != nil {
 						resp.Status = false
 						resp.Message = "Tidak ada data User: " + tokenlogin
@@ -208,7 +207,7 @@ func InsertReport(PublicKey, MongoEnv, dbname, colname string, r *http.Request) 
 								})
 							}
 							// Insert report data into the database
-							InsertDataReport(conn, colname, Report{
+							InsertReport(conn, colname, Report{
 								Reportid: req.Reportid,
 								Date:     req.Date,
 								User: User{
