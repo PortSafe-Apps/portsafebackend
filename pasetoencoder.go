@@ -8,12 +8,12 @@ import (
 	"aidanwoods.dev/go-paseto"
 )
 
-func EncodeWithRole(role, username, privatekey string) (string, error) {
+func EncodeWithRole(role, nipp, privatekey string) (string, error) {
 	token := paseto.NewToken()
 	token.SetIssuedAt(time.Now())
 	token.SetNotBefore(time.Now())
 	token.SetExpiration(time.Now().Add(2 * time.Hour))
-	token.SetString("user", username)
+	token.SetString("user", nipp)
 	token.SetString("role", role)
 	key, err := paseto.NewV4AsymmetricSecretKeyFromHex(privatekey)
 	return token.V4Sign(key, nil), err
