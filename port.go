@@ -147,30 +147,24 @@ func ResetPassword(MongoEnv, publickey, dbname, colname string, r *http.Request)
 	return GCFReturnStruct(resp)
 }
 
-func InsertReport(MongoEnv, dbname, colname, PublicKey string, r *http.Request) string {
+func InsertReport(PublicKey, MongoEnv, dbname, colname string, r *http.Request) string {
 	resp := new(Credential)
 	req := new(Report)
 	conn := SetConnection(MongoEnv, dbname)
-
-	// Get the login token from the request header
 	tokenlogin := r.Header.Get("Login")
 
 	if tokenlogin == "" {
 		resp.Status = false
 		resp.Message = "Header Login Not Found"
 	} else {
-		// Check if the token belongs to an admin
 		checkadmin := IsAdmin(tokenlogin, os.Getenv(PublicKey))
-
 		if !checkadmin {
-			// Check if the token belongs to a regular user
 			checkUser := IsUser(tokenlogin, os.Getenv(PublicKey))
 
 			if !checkUser {
 				resp.Status = false
 				resp.Message = "Anda tidak bisa Insert data karena bukan user atau admin"
 			} else {
-				// Decode the request body into the 'req' variable
 				err := json.NewDecoder(r.Body).Decode(&req)
 				if err != nil {
 					resp.Status = false
@@ -182,35 +176,29 @@ func InsertReport(MongoEnv, dbname, colname, PublicKey string, r *http.Request) 
 						resp.Status = false
 						resp.Message = "Tidak ada data User: " + tokenlogin
 					} else {
-						// Check if the user exists in the database
 						compared := CompareNipp(conn, colname, checktoken)
 						if !compared {
 							resp.Status = false
 							resp.Message = "Data User tidak ada"
 						} else {
-							// Get user information from the database
 							datauser := GetOneUser(conn, colname, User{Nipp: checktoken})
-							// Check if user information is found
 							if datauser == (User{}) {
 								resp.Status = false
 								resp.Message = "Informasi pengguna tidak ditemukan"
 								return GCFReturnStruct(resp)
 							}
-							// Get data area by name
 							area := GetAreaByName(conn, req.Area.AreaName)
 							if area == nil {
 								resp.Status = false
 								resp.Message = "Area tidak ditemukan"
 								return GCFReturnStruct(resp)
 							}
-							// Get data location by name
 							location := GetLocationByName(conn, req.Location.LocationName)
 							if location == nil {
 								resp.Status = false
 								resp.Message = "Lokasi tidak ditemukan"
 								return GCFReturnStruct(resp)
 							}
-							// Select multiple TypeDangerousActions
 							var selectedTypeDangerousActions []TypeDangerousActions
 							for _, tda := range req.TypeDangerousActions {
 								selectedTypeDangerousActions = append(selectedTypeDangerousActions, TypeDangerousActions{
