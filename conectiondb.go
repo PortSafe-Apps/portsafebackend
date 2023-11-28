@@ -38,20 +38,6 @@ func GetOneUser(MongoConn *mongo.Database, colname string, userdata User) User {
 	return data
 }
 
-func GetOneUserByNipp(MongoConn *mongo.Database, colname, nipp string) (User, error) {
-	filter := bson.M{"nipp": nipp}
-	result := MongoConn.Collection(colname).FindOne(context.TODO(), filter)
-	if result.Err() != nil {
-		return User{}, result.Err()
-	}
-	var user User
-	if err := result.Decode(&user); err != nil {
-		return User{}, err
-	}
-
-	return user, nil
-}
-
 func InsertUserdata(MongoConn *mongo.Database, nipp, nama, jabatan, divisi, bidang, password, role string) (InsertedID interface{}) {
 	req := new(User)
 	req.Nipp = nipp
@@ -123,6 +109,20 @@ func GetLocationByName(MongoConn *mongo.Database, locationName string) *Location
 	}
 
 	return &location
+}
+
+func GetUserByNipp(MongoConn *mongo.Database, nipp string) (*User, error) {
+	collection := MongoConn.Collection("user")
+	filter := bson.D{{Key: "nipp", Value: nipp}}
+
+	var user User
+	err := collection.FindOne(context.Background(), filter).Decode(&user)
+	if err != nil {
+		// Handle error, misalnya return nil atau tindakan lain yang sesuai
+		return nil, err
+	}
+
+	return &user, nil
 }
 
 func InsertReport(MongoConn *mongo.Database, colname string, rpt Report) (InsertedID interface{}) {
