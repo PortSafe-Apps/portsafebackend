@@ -249,62 +249,62 @@ func InsertDataReport(Publickey, MongoEnv, dbname, colname string, r *http.Reque
 }
 
 func UpdateDataReport(Publickey, MongoEnv, dbname, colname string, r *http.Request) string {
-	resp := new(Credential)
-	req := new(Report)
+	req := new(Credential)
+	resp := new(Report)
 	conn := SetConnection(MongoEnv, dbname)
 	tokenlogin := r.Header.Get("Login")
 
 	if tokenlogin == "" {
-		resp.Status = false
-		resp.Message = "Header Login Not Found"
+		req.Status = false
+		req.Message = "Header Login Not Found"
 	} else {
 		checkUser := IsUser(tokenlogin, os.Getenv(Publickey))
 		if !checkUser {
-			resp.Status = false
-			resp.Message = "Anda tidak bisa Update data karena bukan user atau admin"
+			req.Status = false
+			req.Message = "Anda tidak bisa Update data karena bukan user atau admin"
 		} else {
 			err := json.NewDecoder(r.Body).Decode(&req)
 			if err != nil {
-				resp.Status = false
-				resp.Message = "Error parsing application/json: " + err.Error()
+				req.Status = false
+				req.Message = "Error parsing application/json: " + err.Error()
 			} else {
 				// Decode the user information from the token
 				checktoken, err := DecodeGetUser(os.Getenv(Publickey), tokenlogin)
 				if err != nil {
-					resp.Status = false
-					resp.Message = "Tidak ada data User: " + tokenlogin
+					req.Status = false
+					req.Message = "Tidak ada data User: " + tokenlogin
 				} else {
 					// Hapus blok perbandingan Nipp yang tidak diperlukan
 					if checktoken == "" {
-						resp.Status = false
-						resp.Message = "Token tidak berisi informasi user yang valid"
-						return GCFReturnStruct(resp)
+						req.Status = false
+						req.Message = "Token tidak berisi informasi user yang valid"
+						return GCFReturnStruct(req)
 					}
 
 					// Get user information by Nipp
 					datauser, err := GetUserByNipp(conn, checktoken)
 					if err != nil {
-						resp.Status = false
-						resp.Message = "Error retrieving user information: " + err.Error()
-						return GCFReturnStruct(resp)
+						req.Status = false
+						req.Message = "Error retrieving user information: " + err.Error()
+						return GCFReturnStruct(req)
 					}
 
-					area := GetAreaByName(conn, req.Area.AreaName)
+					area := GetAreaByName(conn, resp.Area.AreaName)
 					if area == nil {
-						resp.Status = false
-						resp.Message = "Area tidak ditemukan"
+						req.Status = false
+						req.Message = "Area tidak ditemukan"
 						return GCFReturnStruct(resp)
 					}
 
-					location := GetLocationByName(conn, req.Location.LocationName)
+					location := GetLocationByName(conn, resp.Location.LocationName)
 					if location == nil {
-						resp.Status = false
-						resp.Message = "Lokasi tidak ditemukan"
+						req.Status = false
+						req.Message = "Lokasi tidak ditemukan"
 						return GCFReturnStruct(resp)
 					}
 
 					var selectedTypeDangerousActions []TypeDangerousActions
-					for _, tda := range req.TypeDangerousActions {
+					for _, tda := range resp.TypeDangerousActions {
 						selectedTypeDangerousActions = append(selectedTypeDangerousActions, TypeDangerousActions{
 							TypeId:   tda.TypeId,
 							TypeName: tda.TypeName,
@@ -314,8 +314,8 @@ func UpdateDataReport(Publickey, MongoEnv, dbname, colname string, r *http.Reque
 
 					// Update report data in the "reporting" collection
 					UpdateReport(conn, context.Background(), Report{
-						Reportid: req.Reportid,
-						Date:     req.Date,
+						Reportid: resp.Reportid,
+						Date:     resp.Date,
 						User: User{
 							Nama:    datauser.Nama,
 							Jabatan: datauser.Jabatan,
@@ -325,20 +325,20 @@ func UpdateDataReport(Publickey, MongoEnv, dbname, colname string, r *http.Reque
 							LocationId:   location.LocationId,
 							LocationName: location.LocationName,
 						},
-						Description:          req.Description,
-						ObservationPhoto:     req.ObservationPhoto,
+						Description:          resp.Description,
+						ObservationPhoto:     resp.ObservationPhoto,
 						TypeDangerousActions: selectedTypeDangerousActions,
 						Area: Area{
 							AreaId:   area.AreaId,
 							AreaName: area.AreaName,
 						},
-						ImmediateAction:  req.ImmediateAction,
-						ImprovementPhoto: req.ImprovementPhoto,
-						CorrectiveAction: req.CorrectiveAction,
+						ImmediateAction:  resp.ImmediateAction,
+						ImprovementPhoto: resp.ImprovementPhoto,
+						CorrectiveAction: resp.CorrectiveAction,
 					})
 
-					resp.Status = true
-					resp.Message = "Berhasil Update data"
+					req.Status = true
+					req.Message = "Berhasil Update data"
 				}
 			}
 		}
