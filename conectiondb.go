@@ -166,3 +166,31 @@ func GetAllReportData(Mongoconn *mongo.Database, colname string) []Report {
 	data := atdb.GetAllDoc[[]Report](Mongoconn, colname)
 	return data
 }
+
+func GetAllReportDataByUser(conn *mongo.Database, colname, userID string) []Report {
+	var reports []Report
+
+	filter := bson.D{{Key: "user.nipp", Value: userID}} // Sesuaikan dengan struktur data yang digunakan
+	cur, err := conn.Collection(colname).Find(context.Background(), filter)
+	if err != nil {
+		// Handle error
+		return reports
+	}
+	defer cur.Close(context.Background())
+
+	for cur.Next(context.Background()) {
+		var report Report
+		if err := cur.Decode(&report); err != nil {
+			// Handle decoding error
+			continue
+		}
+		reports = append(reports, report)
+	}
+
+	if err := cur.Err(); err != nil {
+		// Handle error
+		return reports
+	}
+
+	return reports
+}
