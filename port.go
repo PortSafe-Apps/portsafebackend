@@ -355,40 +355,36 @@ func UpdateDataReport(Publickey, MongoEnv, dbname, colname string, r *http.Reque
 	return GCFReturnStruct(resp)
 }
 
-func GetOneReport(publicKey, mongoEnv, dbname, colname string, r *http.Request) string {
+func GetOneReport(PublicKey, MongoEnv, dbname, colname string, r *http.Request) string {
 	req := new(ResponseReport)
 	resp := new(RequestReport)
-	conn := SetConnection(mongoEnv, dbname)
+	conn := SetConnection(MongoEnv, dbname)
 	tokenlogin := r.Header.Get("Login")
 
 	if tokenlogin == "" {
 		req.Status = fiber.StatusBadRequest
 		req.Message = "Header Login Not Found"
+		return GCFReturnStruct(req)
+	}
+
+	err := json.NewDecoder(r.Body).Decode(&resp)
+	if err != nil {
+		req.Status = fiber.StatusBadRequest
+		req.Message = "Error parsing application/json: " + err.Error()
+		return GCFReturnStruct(req)
+	}
+
+	checkAdmin := IsAdmin(tokenlogin, os.Getenv(PublicKey))
+	checkUser := IsUser(tokenlogin, os.Getenv(PublicKey))
+
+	if checkAdmin || checkUser {
+		datauser := GetOneReportData(conn, colname, resp.Reportid)
+		req.Status = fiber.StatusOK
+		req.Message = "Data User berhasil diambil"
+		req.Data = datauser
 	} else {
-		err := json.NewDecoder(r.Body).Decode(&resp)
-		if err != nil {
-			req.Status = fiber.StatusBadRequest
-			req.Message = "Error parsing application/json: " + err.Error()
-		} else {
-			checktoken, err := DecodeGetUser(os.Getenv(publicKey), tokenlogin)
-			if err != nil {
-				req.Status = fiber.StatusInternalServerError
-				req.Message = "Error decoding user token: " + err.Error()
-			} else {
-				datauser, err := GetUserByNipp(conn, checktoken)
-				if err != nil {
-					req.Status = fiber.StatusBadRequest
-					req.Message = "Error memberikan data pengguna: " + err.Error()
-				} else {
-					if datauser.Nipp == resp.Reportid {
-						datareport := GetOneReportData(conn, colname, resp.Reportid)
-						req.Status = fiber.StatusOK
-						req.Message = "data User berhasil diambil"
-						req.Data = datareport
-					}
-				}
-			}
-		}
+		req.Status = fiber.StatusBadRequest
+		req.Message = "Anda tidak memiliki izin untuk mengakses data"
 	}
 
 	return GCFReturnStruct(req)
@@ -471,14 +467,14 @@ func DeleteReport(Mongoenv, publickey, dbname, colname string, r *http.Request) 
 		resp.Status = fiber.StatusBadRequest
 		resp.Message = "Token login tidak ada"
 	} else {
-		checkUser := IsUser(tokenlogin, os.Getenv(publickey))
-		if !checkUser {
-			resp.Status = fiber.StatusInternalServerError
-			resp.Message = "kamu bukan user"
+		err := json.NewDecoder(r.Body).Decode(&req)
+		if err != nil {
+			resp.Message = "error parsing application/json: " + err.Error()
 		} else {
-			err := json.NewDecoder(r.Body).Decode(&req)
-			if err != nil {
-				resp.Message = "error parsing application/json: " + err.Error()
+			checkuser := IsUser(tokenlogin, os.Getenv(publickey))
+			if !checkuser {
+				resp.Status = fiber.StatusInternalServerError
+				resp.Message = "kamu bukan user"
 			} else {
 				_, err := DeleteReportData(conn, colname, req.Reportid)
 				if err != nil {
