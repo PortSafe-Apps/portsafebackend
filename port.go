@@ -324,19 +324,20 @@ func GetOneReport(PublicKey, MongoEnv, dbname, colname string, r *http.Request) 
 		req.Status = fiber.StatusBadRequest
 		req.Message = "Error parsing application/json: " + err.Error()
 		return GCFReturnStruct(req)
-	}
-
-	checkAdmin := IsAdmin(tokenlogin, os.Getenv(PublicKey))
-	checkUser := IsUser(tokenlogin, os.Getenv(PublicKey))
-
-	if checkAdmin || checkUser {
-		datauser := GetOneReportData(conn, colname, resp.Reportid)
-		req.Status = fiber.StatusOK
-		req.Message = "Data User berhasil diambil"
-		req.Data = datauser
 	} else {
-		req.Status = fiber.StatusBadRequest
-		req.Message = "Anda tidak memiliki izin untuk mengakses data"
+		checkadmin := IsAdmin(tokenlogin, os.Getenv(PublicKey))
+		if !checkadmin {
+			checkUser := IsUser(tokenlogin, os.Getenv(PublicKey))
+			if !checkUser {
+				req.Status = fiber.StatusBadRequest
+				req.Message = "Anda tidak bisa Get data karena bukan User atau admin"
+			}
+		} else {
+			datauser := GetOneReportData(conn, colname, resp.Reportid)
+			req.Status = fiber.StatusOK
+			req.Message = "data User berhasil diambil"
+			req.Data = datauser
+		}
 	}
 
 	return GCFReturnStruct(req)
