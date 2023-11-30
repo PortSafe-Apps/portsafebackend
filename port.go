@@ -365,41 +365,29 @@ func GetOneReport(publicKey, mongoEnv, dbname, colname string, r *http.Request) 
 		req.Status = fiber.StatusBadRequest
 		req.Message = "Header Login Not Found"
 	} else {
-		checkadmin := IsAdmin(tokenlogin, os.Getenv(publicKey))
-		checkUser := IsUser(tokenlogin, os.Getenv(publicKey))
-
-		if checkadmin || checkUser {
-			checktoken, err := DecodeGetUser(os.Getenv(publicKey), tokenlogin)
+		checktoken, err := DecodeGetUser(os.Getenv(publicKey), tokenlogin)
+		if err != nil {
+			req.Status = fiber.StatusInternalServerError
+			req.Message = "Error decoding user token: " + err.Error()
+		} else {
+			err := json.NewDecoder(r.Body).Decode(&resp)
 			if err != nil {
-				req.Status = fiber.StatusInternalServerError
-				req.Message = "Error decoding user token: " + err.Error()
+				req.Status = fiber.StatusBadRequest
+				req.Message = "Error parsing application/json: " + err.Error()
 			} else {
-				err := json.NewDecoder(r.Body).Decode(&resp)
+				datauser, err := GetUserByNipp(conn, checktoken)
 				if err != nil {
 					req.Status = fiber.StatusBadRequest
-					req.Message = "Error parsing application/json: " + err.Error()
+					req.Message = "Error memberikan data pengguna: " + err.Error()
 				} else {
-					// Decode the user information from the token
-					datauser, err := GetUserByNipp(conn, checktoken)
-					if err != nil {
-						req.Status = fiber.StatusBadRequest
-						req.Message = "Error retrieving user information: " + err.Error()
-					} else {
-						if datauser.Nipp == resp.Reportid {
-							datareport := GetOneReportData(conn, colname, resp.Reportid)
-							req.Status = fiber.StatusOK
-							req.Message = "data User berhasil diambil"
-							req.Data = datareport
-						} else {
-							req.Status = fiber.StatusUnauthorized
-							req.Message = "Anda tidak diizinkan mengakses data ini"
-						}
+					if datauser.Nipp == resp.Reportid {
+						datareport := GetOneReportData(conn, colname, resp.Reportid)
+						req.Status = fiber.StatusOK
+						req.Message = "data User berhasil diambil"
+						req.Data = datareport
 					}
 				}
 			}
-		} else {
-			req.Status = fiber.StatusUnauthorized
-			req.Message = "Anda tidak diizinkan mengakses data ini"
 		}
 	}
 
