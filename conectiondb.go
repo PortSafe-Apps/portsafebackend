@@ -143,7 +143,8 @@ func InsertReport(MongoConn *mongo.Database, colname string, rpt Report) (Insert
 
 func UpdateReport(Mongoconn *mongo.Database, ctx context.Context, rpt Report) (UpdateId interface{}, err error) {
 	filter := bson.D{{Key: "reportid", Value: rpt.Reportid}}
-	res, err := Mongoconn.Collection("reporting").ReplaceOne(ctx, filter, rpt)
+	update := bson.D{{Key: "$set", Value: rpt}}
+	res, err := Mongoconn.Collection("reporting").UpdateOne(ctx, filter, update)
 	if err != nil {
 		return nil, err
 	}
@@ -167,14 +168,14 @@ func GetAllReportData(Mongoconn *mongo.Database, colname string) []Report {
 	return data
 }
 
-func GetAllReportDataByUser(conn *mongo.Database, colname, userID string) []Report {
+func GetAllReportDataByUser(conn *mongo.Database, colname, nipp string) ([]Report, error) {
 	var reports []Report
 
-	filter := bson.D{{Key: "user.nipp", Value: userID}} // Sesuaikan dengan struktur data yang digunakan
+	filter := bson.D{{Key: "user.nipp", Value: nipp}} // Sesuaikan dengan struktur data yang digunakan
 	cur, err := conn.Collection(colname).Find(context.Background(), filter)
 	if err != nil {
 		// Handle error
-		return reports
+		return reports, err
 	}
 	defer cur.Close(context.Background())
 
@@ -189,8 +190,8 @@ func GetAllReportDataByUser(conn *mongo.Database, colname, userID string) []Repo
 
 	if err := cur.Err(); err != nil {
 		// Handle error
-		return reports
+		return reports, err
 	}
 
-	return reports
+	return reports, nil
 }
