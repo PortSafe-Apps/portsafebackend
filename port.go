@@ -260,66 +260,50 @@ func UpdateDataReport(Publickey, MongoEnv, dbname, colname string, r *http.Reque
 		req.Status = false
 		req.Message = "Header Login Not Found"
 	} else {
-		checkUser := IsUser(tokenlogin, os.Getenv(Publickey))
-		if !checkUser {
+		err := json.NewDecoder(r.Body).Decode(&req)
+		if err != nil {
 			req.Status = false
-			req.Message = "Anda tidak bisa Update data karena bukan user atau admin"
+			req.Message = "Error parsing application/json: " + err.Error()
 		} else {
-			err := json.NewDecoder(r.Body).Decode(&req)
-			if err != nil {
+			checkUser := IsUser(tokenlogin, os.Getenv(Publickey))
+			if !checkUser {
 				req.Status = false
-				req.Message = "Error parsing application/json: " + err.Error()
-			} else {
-				// Decode the user information from the token
-				checktoken, err := DecodeGetUser(os.Getenv(Publickey), tokenlogin)
-				if err != nil {
-					req.Status = false
-					req.Message = "Tidak ada data User: " + tokenlogin
-				} else {
-					// Hapus blok perbandingan Nipp yang tidak diperlukan
-					if checktoken == "" {
-						req.Status = false
-						req.Message = "Token tidak berisi informasi user yang valid"
-						return GCFReturnStruct(req)
-					}
-
-					UpdateReport(conn, context.Background(), Report{
-						Reportid: resp.Reportid,
-						Date:     resp.Date,
-						User: User{
-							Nipp:    resp.User.Nipp,
-							Nama:    resp.User.Nama,
-							Jabatan: resp.User.Jabatan,
-							Divisi:  resp.User.Divisi,
-						},
-						Location: Location{
-							LocationId:   resp.Location.LocationId,
-							LocationName: resp.Location.LocationName,
-						},
-						Description:          resp.Description,
-						ObservationPhoto:     resp.ObservationPhoto,
-						TypeDangerousActions: resp.TypeDangerousActions,
-						Area: Area{
-							AreaId:   resp.Area.AreaId,
-							AreaName: resp.Area.AreaName,
-						},
-						ImmediateAction:  resp.ImmediateAction,
-						ImprovementPhoto: resp.ImprovementPhoto,
-						CorrectiveAction: resp.CorrectiveAction,
-					})
-
-					req.Status = true
-					req.Message = "Berhasil Update data"
-				}
-				if err != nil {
-					req.Status = false
-					req.Message = "Gagal Update data: " + err.Error()
-					return GCFReturnStruct(req)
-				}
+				req.Message = "Anda tidak bisa Update data karena bukan user atau admin"
 			}
+			UpdateReport(conn, context.Background(), Report{
+				Reportid: resp.Reportid,
+				Date:     resp.Date,
+				User: User{
+					Nipp:    resp.User.Nipp,
+					Nama:    resp.User.Nama,
+					Jabatan: resp.User.Jabatan,
+					Divisi:  resp.User.Divisi,
+				},
+				Location: Location{
+					LocationId:   resp.Location.LocationId,
+					LocationName: resp.Location.LocationName,
+				},
+				Description:          resp.Description,
+				ObservationPhoto:     resp.ObservationPhoto,
+				TypeDangerousActions: resp.TypeDangerousActions,
+				Area: Area{
+					AreaId:   resp.Area.AreaId,
+					AreaName: resp.Area.AreaName,
+				},
+				ImmediateAction:  resp.ImmediateAction,
+				ImprovementPhoto: resp.ImprovementPhoto,
+				CorrectiveAction: resp.CorrectiveAction,
+			})
+
+			req.Status = true
+			req.Message = "Berhasil Update data"
+		}
+		if err != nil {
+			req.Status = false
+			req.Message = "Gagal Update data: " + err.Error()
+			return GCFReturnStruct(req)
 		}
 	}
-
 	return GCFReturnStruct(resp)
 }
 
