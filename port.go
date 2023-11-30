@@ -362,37 +362,44 @@ func GetOneReport(PublicKey, MongoEnv, dbname, colname string, r *http.Request) 
 			req.Status = fiber.StatusBadRequest
 			req.Message = "Error parsing application/json: " + err.Error()
 		} else {
-			// Decode the user information from the token
-			checktoken, err := DecodeGetUser(os.Getenv(PublicKey), tokenlogin)
-			if err != nil {
-				req.Status = fiber.StatusBadRequest
-				req.Message = "Tidak ada data User: " + tokenlogin
-			} else {
-				// Hapus blok perbandingan Nipp yang tidak diperlukan
-				if checktoken == "" {
-					req.Status = fiber.StatusBadRequest
-					req.Message = "Token tidak berisi informasi user yang valid"
-					return GCFReturnStruct(req)
-				}
+			checkadmin := IsAdmin(tokenlogin, os.Getenv(PublicKey))
+			checkUser := IsUser(tokenlogin, os.Getenv(PublicKey))
 
-				// Get user information by Nipp
-				datauser, err := GetUserByNipp(conn, checktoken)
+			if checkadmin || checkUser {
+				checktoken, err := DecodeGetUser(os.Getenv(PublicKey), tokenlogin)
 				if err != nil {
 					req.Status = fiber.StatusBadRequest
-					req.Message = "Error retrieving user information: " + err.Error()
-					return GCFReturnStruct(req)
-				}
-
-				// Check if the user is the owner of the report
-				if datauser.Nipp == resp.Reportid {
-					reportData := GetOneReportData(conn, colname, resp.Reportid)
-					req.Status = fiber.StatusOK
-					req.Message = "Data User berhasil diambil"
-					req.Data = reportData
+					req.Message = "Tidak ada data User: " + tokenlogin
 				} else {
-					req.Status = fiber.StatusUnauthorized
-					req.Message = "Anda tidak diizinkan mengakses data ini"
+					// Hapus blok perbandingan Nipp yang tidak diperlukan
+					if checktoken == "" {
+						req.Status = fiber.StatusBadRequest
+						req.Message = "Token tidak berisi informasi user yang valid"
+						return GCFReturnStruct(req)
+					}
+
+					// Get user information by Nipp
+					datauser, err := GetUserByNipp(conn, checktoken)
+					if err != nil {
+						req.Status = fiber.StatusBadRequest
+						req.Message = "Error retrieving user information: " + err.Error()
+						return GCFReturnStruct(req)
+					}
+
+					// Check if the user is the owner of the report
+					if datauser.Nipp == resp.Reportid {
+						reportData := GetOneReportData(conn, colname, resp.Reportid)
+						req.Status = fiber.StatusOK
+						req.Message = "Data User berhasil diambil"
+						req.Data = reportData
+					} else {
+						req.Status = fiber.StatusUnauthorized
+						req.Message = "Anda tidak diizinkan mengakses data ini"
+					}
 				}
+			} else {
+				req.Status = fiber.StatusUnauthorized
+				req.Message = "Anda tidak diizinkan mengakses data ini"
 			}
 		}
 	}
