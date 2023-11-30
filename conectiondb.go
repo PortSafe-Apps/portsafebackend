@@ -143,8 +143,7 @@ func InsertReport(MongoConn *mongo.Database, colname string, rpt Report) (Insert
 
 func UpdateReport(Mongoconn *mongo.Database, ctx context.Context, rpt Report) (UpdateId interface{}, err error) {
 	filter := bson.D{{Key: "reportid", Value: rpt.Reportid}}
-	update := bson.D{{Key: "$set", Value: rpt}}
-	res, err := Mongoconn.Collection("reporting").UpdateOne(ctx, filter, update)
+	res, err := Mongoconn.Collection("reporting").ReplaceOne(ctx, filter, rpt)
 	if err != nil {
 		return nil, err
 	}
