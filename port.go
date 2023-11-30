@@ -365,15 +365,15 @@ func GetOneReport(publicKey, mongoEnv, dbname, colname string, r *http.Request) 
 		req.Status = fiber.StatusBadRequest
 		req.Message = "Header Login Not Found"
 	} else {
-		checktoken, err := DecodeGetUser(os.Getenv(publicKey), tokenlogin)
+		err := json.NewDecoder(r.Body).Decode(&resp)
 		if err != nil {
-			req.Status = fiber.StatusInternalServerError
-			req.Message = "Error decoding user token: " + err.Error()
+			req.Status = fiber.StatusBadRequest
+			req.Message = "Error parsing application/json: " + err.Error()
 		} else {
-			err := json.NewDecoder(r.Body).Decode(&resp)
+			checktoken, err := DecodeGetUser(os.Getenv(publicKey), tokenlogin)
 			if err != nil {
-				req.Status = fiber.StatusBadRequest
-				req.Message = "Error parsing application/json: " + err.Error()
+				req.Status = fiber.StatusInternalServerError
+				req.Message = "Error decoding user token: " + err.Error()
 			} else {
 				datauser, err := GetUserByNipp(conn, checktoken)
 				if err != nil {
@@ -471,14 +471,14 @@ func DeleteReport(Mongoenv, publickey, dbname, colname string, r *http.Request) 
 		resp.Status = fiber.StatusBadRequest
 		resp.Message = "Token login tidak ada"
 	} else {
-		err := json.NewDecoder(r.Body).Decode(&req)
-		if err != nil {
-			resp.Message = "error parsing application/json: " + err.Error()
+		checkUser := IsUser(tokenlogin, os.Getenv(publickey))
+		if !checkUser {
+			resp.Status = fiber.StatusInternalServerError
+			resp.Message = "kamu bukan user"
 		} else {
-			checkUser := IsUser(tokenlogin, os.Getenv(publickey))
-			if !checkUser {
-				resp.Status = fiber.StatusInternalServerError
-				resp.Message = "kamu bukan user"
+			err := json.NewDecoder(r.Body).Decode(&req)
+			if err != nil {
+				resp.Message = "error parsing application/json: " + err.Error()
 			} else {
 				_, err := DeleteReportData(conn, colname, req.Reportid)
 				if err != nil {
