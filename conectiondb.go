@@ -151,14 +151,14 @@ func UpdateReport(Mongoconn *mongo.Database, ctx context.Context, rpt Report) (U
 	return res, nil
 }
 
-func DeleteReportData(mongoconn *mongo.Database, colname, Repid string) (deletedid interface{}, err error) {
-	filter := bson.M{"reportid": Repid}
+func DeleteReportData(mongoconn *mongo.Database, colname, Reportid string) (deletedid interface{}, err error) {
+	filter := bson.M{"reportid": Reportid}
 	data := atdb.DeleteOneDoc(mongoconn, colname, filter)
 	return data, err
 }
 
-func GetOneReportData(mongoconn *mongo.Database, colname, Repid string) (dest Report) {
-	filter := bson.M{"reportid": Repid}
+func GetOneReportData(mongoconn *mongo.Database, colname, Reportid string) (dest Report) {
+	filter := bson.M{"reportid": Reportid}
 	dest = atdb.GetOneDoc[Report](mongoconn, colname, filter)
 	return
 }
