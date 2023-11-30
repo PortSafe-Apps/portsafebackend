@@ -283,57 +283,25 @@ func UpdateDataReport(Publickey, MongoEnv, dbname, colname string, r *http.Reque
 						return GCFReturnStruct(req)
 					}
 
-					// Get user information by Nipp
-					datauser, err := GetUserByNipp(conn, checktoken)
-					if err != nil {
-						req.Status = false
-						req.Message = "Error retrieving user information: " + err.Error()
-						return GCFReturnStruct(req)
-					}
-
-					area := GetAreaByName(conn, resp.Area.AreaName)
-					if area == nil {
-						req.Status = false
-						req.Message = "Area tidak ditemukan"
-						return GCFReturnStruct(resp)
-					}
-
-					location := GetLocationByName(conn, resp.Location.LocationName)
-					if location == nil {
-						req.Status = false
-						req.Message = "Lokasi tidak ditemukan"
-						return GCFReturnStruct(resp)
-					}
-
-					var selectedTypeDangerousActions []TypeDangerousActions
-					for _, tda := range resp.TypeDangerousActions {
-						selectedTypeDangerousActions = append(selectedTypeDangerousActions, TypeDangerousActions{
-							TypeId:   tda.TypeId,
-							TypeName: tda.TypeName,
-							SubTypes: tda.SubTypes,
-						})
-					}
-
-					// Update report data in the "reporting" collection
 					UpdateReport(conn, context.Background(), Report{
 						Reportid: resp.Reportid,
 						Date:     resp.Date,
 						User: User{
-							Nipp:    datauser.Nipp,
-							Nama:    datauser.Nama,
-							Jabatan: datauser.Jabatan,
-							Divisi:  datauser.Divisi,
+							Nipp:    resp.User.Nipp,
+							Nama:    resp.User.Nama,
+							Jabatan: resp.User.Jabatan,
+							Divisi:  resp.User.Divisi,
 						},
 						Location: Location{
-							LocationId:   location.LocationId,
-							LocationName: location.LocationName,
+							LocationId:   resp.Location.LocationId,
+							LocationName: resp.Location.LocationName,
 						},
 						Description:          resp.Description,
 						ObservationPhoto:     resp.ObservationPhoto,
-						TypeDangerousActions: selectedTypeDangerousActions,
+						TypeDangerousActions: resp.TypeDangerousActions,
 						Area: Area{
-							AreaId:   area.AreaId,
-							AreaName: area.AreaName,
+							AreaId:   resp.Area.AreaId,
+							AreaName: resp.Area.AreaName,
 						},
 						ImmediateAction:  resp.ImmediateAction,
 						ImprovementPhoto: resp.ImprovementPhoto,
