@@ -370,7 +370,7 @@ func GetOneReport(PublicKey, MongoEnv, dbname, colname string, r *http.Request) 
 				}
 
 				// Check if the user is the owner of the report or an admin
-				if datauser.Nipp == resp.Reportid || IsUser(tokenlogin, os.Getenv(PublicKey)) {
+				if datauser.Nipp == resp.Reportid || IsUser(tokenlogin, os.Getenv(PublicKey)) || IsAdmin(tokenlogin, os.Getenv(PublicKey)) {
 					reportData := GetOneReportData(conn, colname, resp.Reportid)
 					req.Status = fiber.StatusOK
 					req.Message = "Data User berhasil diambil"
