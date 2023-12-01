@@ -51,8 +51,9 @@ func Login(Privatekey, MongoEnv, dbname, Colname string, r *http.Request) string
 				resp.Message = "Gagal Encode Token : " + err.Error()
 			} else {
 				resp.Status = true
-				resp.Message = "Selamat Datang"
 				resp.Token = tokenstring
+				resp.Message = "Selamat Datang di Portsafe+"
+				resp.Role = datarole.Role
 			}
 		} else {
 			resp.Message = "Password Salah"
