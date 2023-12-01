@@ -260,51 +260,77 @@ func UpdateDataReport(Publickey, MongoEnv, dbname, colname string, r *http.Reque
 		req.Status = false
 		req.Message = "Header Login Not Found"
 	} else {
-		err := json.NewDecoder(r.Body).Decode(&req)
+		err := json.NewDecoder(r.Body).Decode(&resp)
 		if err != nil {
 			req.Status = false
 			req.Message = "Error parsing application/json: " + err.Error()
 		} else {
-			checkUser := IsUser(tokenlogin, os.Getenv(Publickey))
-			if !checkUser {
+			// Decode the user information from the token
+			checktoken, err := DecodeGetUser(os.Getenv(Publickey), tokenlogin)
+			if err != nil {
 				req.Status = false
-				req.Message = "Anda tidak bisa Update data karena bukan user atau admin"
-			}
-			UpdateReport(conn, context.Background(), Report{
-				Reportid: resp.Reportid,
-				Date:     resp.Date,
-				User: User{
-					Nipp:    resp.User.Nipp,
-					Nama:    resp.User.Nama,
-					Jabatan: resp.User.Jabatan,
-					Divisi:  resp.User.Divisi,
-				},
-				Location: Location{
-					LocationId:   resp.Location.LocationId,
-					LocationName: resp.Location.LocationName,
-				},
-				Description:          resp.Description,
-				ObservationPhoto:     resp.ObservationPhoto,
-				TypeDangerousActions: resp.TypeDangerousActions,
-				Area: Area{
-					AreaId:   resp.Area.AreaId,
-					AreaName: resp.Area.AreaName,
-				},
-				ImmediateAction:  resp.ImmediateAction,
-				ImprovementPhoto: resp.ImprovementPhoto,
-				CorrectiveAction: resp.CorrectiveAction,
-			})
+				req.Message = "Tidak ada data User: " + tokenlogin
+			} else {
+				// Hapus blok perbandingan Nipp yang tidak diperlukan
+				if checktoken == "" {
+					req.Status = false
+					req.Message = "Token tidak berisi informasi user yang valid"
+					return GCFReturnStruct(req)
+				}
 
-			req.Status = true
-			req.Message = "Berhasil Update data"
-		}
-		if err != nil {
-			req.Status = false
-			req.Message = "Gagal Update data: " + err.Error()
-			return GCFReturnStruct(req)
+				// Get user information by Nipp
+				datauser, err := GetUserByNipp(conn, checktoken)
+				if err != nil {
+					req.Status = false
+					req.Message = "Error retrieving user information: " + err.Error()
+					return GCFReturnStruct(req)
+				}
+
+				// Check if the user is the owner of the report or an admin
+				if datauser.Nipp == resp.Reportid || IsUser(tokenlogin, os.Getenv(Publickey)) {
+					// Update report data in the "reporting" collection
+					_, err := UpdateReport(conn, context.Background(), Report{
+						Reportid: resp.Reportid,
+						Date:     resp.Date, // Updated field
+						User: User{
+							Nipp:    datauser.Nipp,
+							Nama:    datauser.Nama,
+							Jabatan: datauser.Jabatan,
+							Divisi:  datauser.Divisi,
+							Bidang:  datauser.Bidang,
+						},
+						Location: Location{
+							LocationId:   resp.Location.LocationId,
+							LocationName: resp.Location.LocationName,
+						},
+						Description:          resp.Description,      // Updated field
+						ObservationPhoto:     resp.ObservationPhoto, // Updated field
+						TypeDangerousActions: resp.TypeDangerousActions,
+						Area: Area{
+							AreaId:   resp.Area.AreaId,
+							AreaName: resp.Area.AreaName,
+						},
+						ImmediateAction:  resp.ImmediateAction,
+						ImprovementPhoto: resp.ImprovementPhoto,
+						CorrectiveAction: resp.CorrectiveAction,
+					})
+
+					if err != nil {
+						req.Status = false
+						req.Message = "Error updating report data: " + err.Error()
+					} else {
+						req.Status = true
+						req.Message = "Berhasil update data"
+					}
+				} else {
+					req.Status = false
+					req.Message = "Anda tidak diizinkan mengakses atau memperbarui data ini"
+				}
+			}
 		}
 	}
-	return GCFReturnStruct(resp)
+
+	return GCFReturnStruct(req)
 }
 
 func GetOneReport(PublicKey, MongoEnv, dbname, colname string, r *http.Request) string {
@@ -316,33 +342,49 @@ func GetOneReport(PublicKey, MongoEnv, dbname, colname string, r *http.Request) 
 	if tokenlogin == "" {
 		req.Status = fiber.StatusBadRequest
 		req.Message = "Header Login Not Found"
-		return GCFReturnStruct(req)
-	}
-
-	err := json.NewDecoder(r.Body).Decode(&resp)
-	if err != nil {
-		req.Status = fiber.StatusBadRequest
-		req.Message = "Error parsing application/json: " + err.Error()
-		return GCFReturnStruct(req)
 	} else {
-		checkadmin := IsAdmin(tokenlogin, os.Getenv(PublicKey))
-		if !checkadmin {
-			checkUser := IsUser(tokenlogin, os.Getenv(PublicKey))
-			if !checkUser {
-				req.Status = fiber.StatusBadRequest
-				req.Message = "Anda tidak bisa Get data karena bukan User atau admin"
-			}
+		err := json.NewDecoder(r.Body).Decode(&resp)
+		if err != nil {
+			req.Status = fiber.StatusBadRequest
+			req.Message = "Error parsing application/json: " + err.Error()
 		} else {
-			datauser := GetOneReportData(conn, colname, resp.Reportid)
-			req.Status = fiber.StatusOK
-			req.Message = "data User berhasil diambil"
-			req.Data = datauser
+			// Decode the user information from the token
+			checktoken, err := DecodeGetUser(os.Getenv(PublicKey), tokenlogin)
+			if err != nil {
+				req.Status = fiber.StatusBadRequest
+				req.Message = "Tidak ada data User: " + tokenlogin
+			} else {
+				// Hapus blok perbandingan Nipp yang tidak diperlukan
+				if checktoken == "" {
+					req.Status = fiber.StatusBadRequest
+					req.Message = "Token tidak berisi informasi user yang valid"
+					return GCFReturnStruct(req)
+				}
+
+				// Get user information by Nipp
+				datauser, err := GetUserByNipp(conn, checktoken)
+				if err != nil {
+					req.Status = fiber.StatusBadRequest
+					req.Message = "Error retrieving user information: " + err.Error()
+					return GCFReturnStruct(req)
+				}
+
+				// Check if the user is the owner of the report or an admin
+				if datauser.Nipp == resp.Reportid || IsUser(tokenlogin, os.Getenv(PublicKey)) {
+					reportData := GetOneReportData(conn, colname, resp.Reportid)
+					req.Status = fiber.StatusOK
+					req.Message = "Data User berhasil diambil"
+					req.Data = reportData
+				} else {
+					req.Status = fiber.StatusUnauthorized
+					req.Message = "Anda tidak diizinkan mengakses data ini"
+				}
+			}
 		}
 	}
 
 	return GCFReturnStruct(req)
 }
-
 func GetAllReport(PublicKey, Mongoenv, dbname, colname string, r *http.Request) string {
 	req := new(ResponseReportBanyak)
 	conn := SetConnection(Mongoenv, dbname)
