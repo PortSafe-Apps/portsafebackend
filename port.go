@@ -456,7 +456,7 @@ func GetAllReportByNipp(PublicKey, Mongoenv, dbname, colname string, r *http.Req
 func DeleteReport(Mongoenv, publickey, dbname, colname string, r *http.Request) string {
 	resp := new(Cred)
 	req := new(RequestReport)
-	conn := SetConnection("mongodb+srv://Fahira:Fahira_123@cluster0.0pvo2aw.mongodb.net/", "portsafedb")
+	conn := SetConnection(Mongoenv, dbname)
 	tokenlogin := r.Header.Get("Login")
 	if tokenlogin == "" {
 		resp.Status = fiber.StatusBadRequest
