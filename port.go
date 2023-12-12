@@ -214,22 +214,6 @@ func InsertDataReport(Publickey, MongoEnv, dbname, colname string, r *http.Reque
 						})
 					}
 
-					// Upload observation photo to Cloudflare R2 and get the URL
-					observationPhotoURL, err := UploadFile(r, "observation_photos")
-					if err != nil {
-						resp.Status = false
-						resp.Message = "Error uploading observation photo to Cloudflare R2: " + err.Error()
-						return GCFReturnStruct(resp)
-					}
-
-					// Upload improvement photo to Cloudflare R2 and get the URL
-					improvementPhotoURL, err := UploadFile(r, "improvement_photos")
-					if err != nil {
-						resp.Status = false
-						resp.Message = "Error uploading improvement photo to Cloudflare R2: " + err.Error()
-						return GCFReturnStruct(resp)
-					}
-
 					// Insert report data into the "reporting" collection
 					InsertReport(conn, colname, Report{
 						Reportid: req.Reportid,
@@ -246,14 +230,14 @@ func InsertDataReport(Publickey, MongoEnv, dbname, colname string, r *http.Reque
 							LocationName: location.LocationName,
 						},
 						Description:          req.Description,
-						ObservationPhoto:     observationPhotoURL,
+						ObservationPhoto:     req.ObservationPhoto,
 						TypeDangerousActions: selectedTypeDangerousActions,
 						Area: Area{
 							AreaId:   area.AreaId,
 							AreaName: area.AreaName,
 						},
 						ImmediateAction:  req.ImmediateAction,
-						ImprovementPhoto: improvementPhotoURL,
+						ImprovementPhoto: req.ImprovementPhoto,
 						CorrectiveAction: req.CorrectiveAction,
 					})
 
