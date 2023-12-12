@@ -30,6 +30,9 @@ func SaveUploadedFile(file *multipart.FileHeader, filename string) error {
 	client := s3.NewFromConfig(cfg)
 
 	// Membuka file yang di-upload
+	fmt.Printf("Opening file: %s\n", filename)
+
+	// Membuka file yang di-upload
 	src, err := file.Open()
 	if err != nil {
 		return err
