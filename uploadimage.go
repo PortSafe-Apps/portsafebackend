@@ -7,6 +7,7 @@ import (
 	"log"
 	"mime/multipart"
 	"net/http"
+	"path/filepath"
 )
 
 const (
@@ -25,7 +26,7 @@ func UploadFile(r *http.Request) (string, error) {
 	// Create a new form file
 	body := &bytes.Buffer{}
 	writer := multipart.NewWriter(body)
-	formFilePart, err := writer.CreateFormFile("file", header.Filename)
+	formFilePart, err := writer.CreateFormFile("file", filepath.Clean(header.Filename))
 	if err != nil {
 		log.Printf("Error creating form file part: %v", err)
 		return "", err
@@ -41,7 +42,7 @@ func UploadFile(r *http.Request) (string, error) {
 	writer.Close()
 
 	// Create a POST request to Cloudflare R2
-	url := fmt.Sprintf("%s/%s/photo.jpg", r2BucketURL, header.Filename)
+	url := fmt.Sprintf("%s/%s/photo.jpg", r2BucketURL, filepath.Clean(header.Filename))
 	req, err := http.NewRequest("POST", url, body)
 	if err != nil {
 		log.Printf("Error creating HTTP request: %v", err)
@@ -60,6 +61,7 @@ func UploadFile(r *http.Request) (string, error) {
 
 	// Check the response status
 	if resp.StatusCode != http.StatusOK {
+		log.Printf("Error response body: %v", resp.Body)
 		return "", fmt.Errorf("cloudflare R2 upload failed with status code: %d", resp.StatusCode)
 	}
 
