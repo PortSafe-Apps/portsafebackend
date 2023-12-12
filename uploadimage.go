@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"log"
 	"mime/multipart"
 	"net/http"
@@ -11,7 +12,8 @@ import (
 )
 
 const (
-	r2BucketURL = "https://c8cc7d3ddeb5397ee6f36830f52e4bc3.r2.cloudflarestorage.com/portsafeapps"
+	r2BucketURL     = "https://c8cc7d3ddeb5397ee6f36830f52e4bc3.r2.cloudflarestorage.com/portsafeapps"
+	publicBucketURL = "https://pub-2ac92df5447e49a3aaf2415839c485a0.r2.dev/portsafeapps"
 )
 
 func UploadFile(r *http.Request) (string, error) {
@@ -65,5 +67,31 @@ func UploadFile(r *http.Request) (string, error) {
 		return "", fmt.Errorf("cloudflare R2 upload failed with status code: %d", resp.StatusCode)
 	}
 
-	return url, nil
+	// Jika berhasil, dapatkan data setelah upload dari Cloudflare R2 menggunakan URL publik
+	uploadedData, err := getUploadedData(publicBucketURL, header.Filename)
+	if err != nil {
+		log.Printf("Error getting uploaded data: %v", err)
+		return "", err
+	}
+
+	// Lakukan sesuatu dengan uploadedData, misalnya, simpan ke basis data atau tampilkan informasi
+
+	return uploadedData, nil
+}
+
+// Fungsi untuk mendapatkan data setelah upload dari Cloudflare R2 menggunakan URL publik
+func getUploadedData(publicURL, filename string) (string, error) {
+	url := fmt.Sprintf("%s/%s/photo.jpg", publicURL, filename)
+	resp, err := http.Get(url)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return "", err
+	}
+
+	return string(body), nil
 }
