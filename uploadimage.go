@@ -1,27 +1,62 @@
 package port
 
 import (
-	"bytes"
+	"context"
 	"fmt"
-	"io"
 	"mime/multipart"
 	"net/http"
+
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/credentials"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
+	"github.com/google/uuid"
 )
 
-const (
-	endpointURL = "https://c8cc7d3ddeb5397ee6f36830f52e4bc3.r2.cloudflarestorage.com"
-	bucketName  = "c8cc7d3ddeb5397ee6f36830f52e4bc3"
-	accessKeyId = "3fcc4c8aeb4b90d188d1250be36bf05d"
+var (
+	accessKeyID     = "3fcc4c8aeb4b90d188d1250be36bf05d"
+	secretAccessKey = "943ae70d601182341ba809ce772dd98ab047c5393d46251080ae7647c847145d"
+	bucketName      = "portsafeapps"
 )
 
-func UploadFile(w http.ResponseWriter, r *http.Request) {
-	// Parse the form file
-	err := r.ParseMultipartForm(10 << 20) // 10 MB
+func SaveUploadedFile(file *multipart.FileHeader, filename string) error {
+	// Konfigurasi AWS
+	cfg, err := config.LoadDefaultConfig(context.TODO(),
+		config.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(accessKeyID, secretAccessKey, "")),
+	)
+	if err != nil {
+		return err
+	}
+
+	client := s3.NewFromConfig(cfg)
+
+	// Membuka file yang di-upload
+	src, err := file.Open()
+	if err != nil {
+		return err
+	}
+	defer src.Close()
+
+	// Membuat input untuk operasi PostObject
+	postObjectInput := &s3.PutObjectInput{
+		Bucket: &bucketName,
+		Key:    &filename,
+		Body:   src,
+	}
+
+	// Melakukan operasi PostObject ke Cloudflare R2
+	_, err = client.PutObject(context.TODO(), postObjectInput)
+	return err
+}
+
+func UploadFileHandler(w http.ResponseWriter, r *http.Request) {
+	// Parse form
+	err := r.ParseMultipartForm(10 << 20) // 10 MB limit
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
+	// Parse the form file
 	file, handler, err := r.FormFile("image")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -29,39 +64,17 @@ func UploadFile(w http.ResponseWriter, r *http.Request) {
 	}
 	defer file.Close()
 
-	// Save the uploaded file to Cloudflare R2
-	err = SaveUploadedFileToR2(file, handler.Filename)
+	// Simpan file ke Cloudflare R2
+	id := uuid.New()
+	fname := id.String() + handler.Filename
+	err = SaveUploadedFile(&multipart.FileHeader{
+		Filename: fname,
+	}, fname)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	// Send a response
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("File uploaded successfully to Cloudflare R2"))
-}
-
-func SaveUploadedFileToR2(file multipart.File, filename string) error {
-	// Membuat buffer untuk menyimpan file
-	fileBuffer := &bytes.Buffer{}
-	_, err := io.Copy(fileBuffer, file)
-	if err != nil {
-		return err
-	}
-
-	// Menggunakan HTTP POST request untuk mengunggah file ke Cloudflare R2
-	url := fmt.Sprintf("%s/%s", endpointURL, filename)
-	resp, err := http.Post(url, "application/octet-stream", fileBuffer)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("failed to upload file. Status: %s", resp.Status)
-	}
-
-	fmt.Println("File successfully uploaded to Cloudflare R2.")
-	return nil
+	// Proses lain (opsional)
+	fmt.Fprintf(w, "File %s berhasil di-upload!\n", fname)
 }
