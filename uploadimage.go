@@ -5,17 +5,12 @@ import (
 	"fmt"
 	"mime/multipart"
 	"net/http"
+	"os"
 
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/google/uuid"
-)
-
-var (
-	accessKeyID     = "3fcc4c8aeb4b90d188d1250be36bf05d"
-	secretAccessKey = "943ae70d601182341ba809ce772dd98ab047c5393d46251080ae7647c847145d"
-	bucketName      = "https://c8cc7d3ddeb5397ee6f36830f52e4bc3.r2.cloudflarestorage.com/portsafeapps/"
 )
 
 // SaveUploadedFile menyimpan file ke AWS S3 menggunakan metode PutObject
@@ -26,9 +21,21 @@ func SaveUploadedFile(file *multipart.FileHeader) error {
 	}
 	defer src.Close()
 
+	// Membaca informasi konfigurasi dari variabel lingkungan
+	accessKeyID := os.Getenv("AWS_ACCESS_KEY_ID")
+	secretAccessKey := os.Getenv("AWS_SECRET_ACCESS_KEY")
+	region := os.Getenv("AWS_REGION")
+	bucketName := os.Getenv("AWS_BUCKET_NAME")
+
+	// Verifikasi apakah semua variabel lingkungan diperlukan tersedia
+	if accessKeyID == "" || secretAccessKey == "" || region == "" || bucketName == "" {
+		return fmt.Errorf("harap atur semua variabel lingkungan AWS (AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_REGION, AWS_BUCKET_NAME)")
+	}
+
 	// Konfigurasi AWS S3
 	cfg, err := config.LoadDefaultConfig(context.TODO(),
 		config.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(accessKeyID, secretAccessKey, "")),
+		config.WithRegion(region),
 	)
 	if err != nil {
 		return fmt.Errorf("gagal memuat konfigurasi AWS: %v", err)
