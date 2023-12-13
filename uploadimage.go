@@ -1,16 +1,24 @@
 package port
 
 import (
-	"bytes"
+	"context"
 	"fmt"
-	"io"
 	"mime/multipart"
 	"net/http"
 
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/credentials"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/google/uuid"
 )
 
-// SaveUploadedFile menyimpan file ke Cloudflare R2 dengan metode POST
+var (
+	accessKeyID     = "3fcc4c8aeb4b90d188d1250be36bf05d"
+	secretAccessKey = "943ae70d601182341ba809ce772dd98ab047c5393d46251080ae7647c847145d"
+	bucketName      = "https://c8cc7d3ddeb5397ee6f36830f52e4bc3.r2.cloudflarestorage.com/portsafeapps/"
+)
+
+// SaveUploadedFile menyimpan file ke AWS S3 menggunakan metode PutObject
 func SaveUploadedFile(file *multipart.FileHeader) error {
 	src, err := file.Open()
 	if err != nil {
@@ -18,71 +26,46 @@ func SaveUploadedFile(file *multipart.FileHeader) error {
 	}
 	defer src.Close()
 
-	// Ganti dengan informasi autentikasi dan URL Cloudflare R2 Anda
-	apiKey := "https://c8cc7d3ddeb5397ee6f36830f52e4bc3.r2.cloudflarestorage.com/portsafeapps"
-	accountID := "c8cc7d3ddeb5397ee6f36830f52e4bc3"
-	bucketName := "portsafeapps"
-	objectName := uuid.New().String() + "_" + file.Filename
-
-	// Tentukan URL endpoint untuk mengunggah objek ke dalam bucket Cloudflare R2
-	url := fmt.Sprintf("https://%s.r2.cloudflare.com/accounts/%s/r2/buckets/%s/objects",
-		accountID, accountID, bucketName)
-
-	// Persiapkan buffer untuk menyimpan data file
-	var buffer bytes.Buffer
-	writer := multipart.NewWriter(&buffer)
-
-	// Tambahkan file ke form-data
-	part, err := writer.CreateFormFile("file", objectName)
+	// Konfigurasi AWS S3
+	cfg, err := config.LoadDefaultConfig(context.TODO(),
+		config.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(accessKeyID, secretAccessKey, "")),
+	)
 	if err != nil {
-		return fmt.Errorf("gagal membuat form file: %v", err)
+		return fmt.Errorf("gagal memuat konfigurasi AWS: %v", err)
 	}
 
-	_, err = io.Copy(part, src)
+	client := s3.NewFromConfig(cfg)
+
+	// Buat UUID baru untuk kunci objek
+	objectKey := uuid.New().String() + "_" + file.Filename
+
+	// Persiapkan input untuk operasi PutObject
+	putObjectInput := &s3.PutObjectInput{
+		Bucket: &bucketName,
+		Key:    &objectKey,
+		Body:   src,
+	}
+
+	// Lakukan operasi PutObject ke AWS S3
+	_, err = client.PutObject(context.TODO(), putObjectInput)
 	if err != nil {
-		return fmt.Errorf("gagal menyalin file ke form: %v", err)
+		return fmt.Errorf("gagal melakukan operasi PutObject: %v", err)
 	}
 
-	// Selesai menulis form-data
-	writer.Close()
-
-	// Persiapkan request HTTP dengan metode POST
-	req, err := http.NewRequest("POST", url, &buffer)
-	if err != nil {
-		return fmt.Errorf("gagal membuat permintaan HTTP: %v", err)
-	}
-
-	// Set header untuk autentikasi dengan API key dan tipe konten form-data
-	req.Header.Set("Authorization", "Bearer "+apiKey)
-	req.Header.Set("Content-Type", writer.FormDataContentType())
-
-	// Lakukan permintaan HTTP
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		return fmt.Errorf("gagal melakukan permintaan HTTP: %v", err)
-	}
-	defer resp.Body.Close()
-
-	// Periksa status code respons
-	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("gagal mengunggah file. Status Code: %s", resp.Status)
-	}
-
-	fmt.Printf("file berhasil diunggah ke Cloudflare R2: %s\n", objectName)
+	fmt.Printf("File berhasil diunggah ke AWS S3: %s\n", objectKey)
 	return nil
 }
 
-// UploadFileHandler menangani permintaan pengunggahan file dengan metode POST
+// UploadFileHandler menangani permintaan pengunggahan file
 func UploadFileHandler(w http.ResponseWriter, r *http.Request) {
 	// Parse form
-	err := r.ParseMultipartForm(10 << 20) // 10 MB limit
+	err := r.ParseMultipartForm(10 << 20) // Batas 10 MB
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	// Parse the form file
+	// Parse file dalam form
 	file, handler, err := r.FormFile("image")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -90,15 +73,13 @@ func UploadFileHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	defer file.Close()
 
-	// Simpan file ke Cloudflare R2 dengan metode POST
-	err = SaveUploadedFile(&multipart.FileHeader{
-		Filename: handler.Filename,
-	})
+	// Simpan file
+	err = SaveUploadedFile(handler)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	// Proses lain (opsional)
-	fmt.Fprintf(w, "file %s berhasil di-upload ke Cloudflare R2 dengan metode POST!\n", handler.Filename)
+	// Proses tambahan (opsional)
+	fmt.Fprintf(w, "File %s berhasil diunggah ke AWS S3 menggunakan Multipart Upload!\n", handler.Filename)
 }
