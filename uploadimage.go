@@ -84,5 +84,5 @@ func UploadFileHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Proses lain (opsional)
-	fmt.Fprintf(w, "File %s berhasil di-upload!\n", fname)
+	fmt.Fprintf(w, "file %s berhasil di-upload!\n", fname)
 }
