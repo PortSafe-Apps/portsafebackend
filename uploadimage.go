@@ -17,20 +17,19 @@ import (
 
 // S3Client returns a new S3 client for the given R2 configuration.
 func S3Client(c Config) (*s3.Client, error) {
-	// Get R2 account endpoint
 	r2Resolver := aws.EndpointResolverWithOptionsFunc(func(service, region string, options ...interface{}) (aws.Endpoint, error) {
 		return aws.Endpoint{
 			URL: fmt.Sprintf("https://%s.r2.cloudflarestorage.com", c.AccountID),
 		}, nil
 	})
 
-	// Set credentials
 	cfg, err := awsConfig.LoadDefaultConfig(context.TODO(),
 		awsConfig.WithEndpointResolverWithOptions(r2Resolver),
 		awsConfig.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(c.AccessKeyID, c.SecretAccessKey, "")),
+		awsConfig.WithRegion("apac"), // Ganti dengan region yang sesuai
 	)
 	if err != nil {
-		return nil, fmt.Errorf("failed to load AWS config: %v", err)
+		return nil, fmt.Errorf("failed to load AWS config: %w", err)
 	}
 
 	return s3.NewFromConfig(cfg), nil
