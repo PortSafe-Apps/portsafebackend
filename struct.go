@@ -104,3 +104,9 @@ type ReqUsers struct {
 type RequestReport struct {
 	Reportid string `json:"reportid"`
 }
+
+type Config struct {
+	AccountID       string
+	AccessKeyID     string
+	SecretAccessKey string
+}
