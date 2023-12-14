@@ -20,7 +20,7 @@ func S3Client(c Config) (*s3.Client, error) {
 	// Get R2 account endpoint
 	r2Resolver := aws.EndpointResolverWithOptionsFunc(func(service, region string, options ...interface{}) (aws.Endpoint, error) {
 		return aws.Endpoint{
-			URL: fmt.Sprintf("https://%s.r2.storage.cloudflare.com", c.AccountID),
+			URL: fmt.Sprintf("https://%s.r2.cloudflarestorage.com", c.AccountID),
 		}, nil
 	})
 
@@ -29,7 +29,6 @@ func S3Client(c Config) (*s3.Client, error) {
 		awsConfig.WithEndpointResolverWithOptions(r2Resolver),
 		awsConfig.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(c.AccessKeyID, c.SecretAccessKey, "")),
 	)
-
 	if err != nil {
 		return nil, fmt.Errorf("failed to load AWS config: %v", err)
 	}
