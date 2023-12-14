@@ -20,14 +20,13 @@ func S3Client(c Config) (*s3.Client, error) {
 	// Get R2 account endpoint
 	r2Resolver := aws.EndpointResolverWithOptionsFunc(func(service, region string, options ...interface{}) (aws.Endpoint, error) {
 		return aws.Endpoint{
-			URL: fmt.Sprintf("https://%s.r2.cloudflarestorage.com", c.AccountID),
+			URL: fmt.Sprintf("https://%s.r2.storage.cloudflare.com", c.AccountID),
 		}, nil
 	})
 
 	// Set credentials
 	cfg, err := awsConfig.LoadDefaultConfig(context.TODO(),
 		awsConfig.WithEndpointResolverWithOptions(r2Resolver),
-		awsConfig.WithRegion("APAC"), // Gantilah dengan wilayah yang sesuai
 		awsConfig.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(c.AccessKeyID, c.SecretAccessKey, "")),
 	)
 
