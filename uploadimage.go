@@ -3,6 +3,7 @@ package port
 import (
 	"context"
 	"fmt"
+	"log"
 	"mime/multipart"
 	"net/http"
 	"os"
@@ -16,20 +17,18 @@ import (
 
 // S3Client returns a new S3 client for the given R2 configuration.
 func S3Client(c Config) (*s3.Client, error) {
-	// Get R2 account endpoint
 	r2Resolver := aws.EndpointResolverWithOptionsFunc(func(service, region string, options ...interface{}) (aws.Endpoint, error) {
 		return aws.Endpoint{
 			URL: fmt.Sprintf("https://%s.r2.cloudflarestorage.com", c.AccountID),
 		}, nil
 	})
 
-	// Set credentials
 	cfg, err := awsConfig.LoadDefaultConfig(context.TODO(),
 		awsConfig.WithEndpointResolverWithOptions(r2Resolver),
 		awsConfig.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(c.AccessKeyID, c.SecretAccessKey, "")),
 	)
 	if err != nil {
-		return nil, fmt.Errorf("failed to load AWS config: %v", err)
+		return nil, fmt.Errorf("failed to load AWS config: %w", err)
 	}
 
 	return s3.NewFromConfig(cfg), nil
@@ -56,7 +55,7 @@ func SaveUploadedFile(file *multipart.FileHeader, bucketName string, s3Client *s
 		return fmt.Errorf("failed to upload file to S3: %v", err)
 	}
 
-	fmt.Printf("File berhasil diunggah ke R2 bucket: %s\n", objectKey)
+	log.Printf("File %s berhasil diunggah ke R2 bucket: %s\n", file.Filename, objectKey)
 	return nil
 }
 
@@ -66,7 +65,7 @@ func UploadFileHandler(w http.ResponseWriter, r *http.Request) {
 	accountID := os.Getenv("R2_ACCOUNT_ID")
 	accessToken := os.Getenv("R2_ACCESS_TOKEN")
 	bucketName := os.Getenv("R2_BUCKET_NAME")
-	accessKey := os.Getenv("R2_SECRET_ACCESS_KEY")
+	secretAccessKey := os.Getenv("R2_SECRET_ACCESS_KEY")
 
 	// Pastikan kredensial R2 sudah di-set sebagai environment variables
 	if accountID == "" || accessToken == "" || bucketName == "" {
@@ -78,7 +77,7 @@ func UploadFileHandler(w http.ResponseWriter, r *http.Request) {
 	r2Config := Config{
 		AccountID:       accountID,
 		AccessKeyID:     accessToken,
-		SecretAccessKey: accessKey,
+		SecretAccessKey: secretAccessKey,
 	}
 
 	// Membuat objek klien S3 dengan konfigurasi khusus
