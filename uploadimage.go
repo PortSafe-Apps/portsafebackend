@@ -6,45 +6,46 @@ import (
 	"log"
 	"mime/multipart"
 	"net/http"
+	"net/url"
 	"os"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsConfig "github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
-	"github.com/google/uuid"
 )
 
 // S3Client returns a new S3 client for the given R2 configuration.
 func S3Client(c Config) (*s3.Client, error) {
+	// Get R2 account endpoint
 	r2Resolver := aws.EndpointResolverWithOptionsFunc(func(service, region string, options ...interface{}) (aws.Endpoint, error) {
 		return aws.Endpoint{
 			URL: fmt.Sprintf("https://%s.r2.cloudflarestorage.com", c.AccountID),
 		}, nil
 	})
 
+	// Set credentials
 	cfg, err := awsConfig.LoadDefaultConfig(context.TODO(),
 		awsConfig.WithEndpointResolverWithOptions(r2Resolver),
 		awsConfig.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(c.AccessKeyID, c.SecretAccessKey, "")),
-		awsConfig.WithRegion("apac"), // Ganti dengan region yang sesuai
 	)
 	if err != nil {
-		return nil, fmt.Errorf("failed to load AWS config: %w", err)
+		return nil, fmt.Errorf("failed to load AWS config: %v", err)
 	}
 
 	return s3.NewFromConfig(cfg), nil
 }
 
 // SaveUploadedFile menyimpan file ke R2 menggunakan metode tertentu
-func SaveUploadedFile(file *multipart.FileHeader, bucketName string, s3Client *s3.Client) error {
+func SaveUploadedFile(file *multipart.FileHeader, bucketName string, s3Client *s3.Client) (string, error) {
 	src, err := file.Open()
 	if err != nil {
-		return fmt.Errorf("failed to open file: %v", err)
+		return "", fmt.Errorf("gagal membuka file: %v", err)
 	}
 	defer src.Close()
 
-	// Buat UUID baru untuk kunci objek
-	objectKey := uuid.New().String() + "_" + file.Filename
+	// Gunakan nama file asli sebagai kunci objek
+	objectKey := file.Filename
 
 	// Lakukan operasi PutObject untuk menyimpan file ke dalam bucket
 	_, err = s3Client.PutObject(context.Background(), &s3.PutObjectInput{
@@ -53,11 +54,14 @@ func SaveUploadedFile(file *multipart.FileHeader, bucketName string, s3Client *s
 		Body:   src,
 	})
 	if err != nil {
-		return fmt.Errorf("failed to upload file to S3: %v", err)
+		return "", fmt.Errorf("gagal mengunggah file ke S3: %v", err)
 	}
 
 	log.Printf("File %s berhasil diunggah ke R2 bucket: %s\n", file.Filename, objectKey)
-	return nil
+
+	// Dapatkan URL publik file yang telah diunggah
+	publicURL := fmt.Sprintf("https://%s.r2.dev/%s", bucketName, url.PathEscape(objectKey))
+	return publicURL, nil
 }
 
 // UploadFileHandler menangani permintaan pengunggahan file
@@ -104,7 +108,7 @@ func UploadFileHandler(w http.ResponseWriter, r *http.Request) {
 	defer file.Close()
 
 	// Simpan file ke R2
-	err = SaveUploadedFile(handler, bucketName, s3Client)
+	publicURL, err := SaveUploadedFile(handler, bucketName, s3Client)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Gagal menyimpan file: %v", err), http.StatusInternalServerError)
 		return
@@ -112,4 +116,5 @@ func UploadFileHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Proses tambahan (opsional)
 	fmt.Fprintf(w, "File %s berhasil diunggah ke R2 bucket!\n", handler.Filename)
+	fmt.Fprintf(w, "URL Publik: %s\n", publicURL)
 }
