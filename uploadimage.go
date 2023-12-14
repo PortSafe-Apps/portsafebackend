@@ -27,8 +27,10 @@ func S3Client(c Config) (*s3.Client, error) {
 	// Set credentials
 	cfg, err := awsConfig.LoadDefaultConfig(context.TODO(),
 		awsConfig.WithEndpointResolverWithOptions(r2Resolver),
+		awsConfig.WithRegion("APAC"), // Gantilah dengan wilayah yang sesuai
 		awsConfig.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(c.AccessKeyID, c.SecretAccessKey, "")),
 	)
+
 	if err != nil {
 		return nil, fmt.Errorf("failed to load AWS config: %v", err)
 	}
