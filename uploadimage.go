@@ -25,7 +25,7 @@ func S3Client(c Config) (*s3.Client, error) {
 
 	cfg, err := awsConfig.LoadDefaultConfig(context.TODO(),
 		awsConfig.WithEndpointResolverWithOptions(r2Resolver),
-		awsConfig.WithRegion("ap-jkt-1"), // Gantilah dengan wilayah yang sesuai
+		awsConfig.WithRegion("apac"), // Gantilah dengan wilayah yang sesuai
 		awsConfig.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(c.AccessKeyID, c.SecretAccessKey, "")),
 	)
 	if err != nil {
