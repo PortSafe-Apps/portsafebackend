@@ -36,7 +36,7 @@ func S3Client(c Config) (*s3.Client, error) {
 	return s3.NewFromConfig(cfg), nil
 }
 
-// SaveUploadedFile menyimpan file ke R2 menggunakan metode tertentu
+// SaveUploadedFile menyimpan file ke R2
 func SaveUploadedFile(file *multipart.FileHeader, bucketName string, s3Client *s3.Client) (string, error) {
 	src, err := file.Open()
 	if err != nil {
@@ -47,11 +47,20 @@ func SaveUploadedFile(file *multipart.FileHeader, bucketName string, s3Client *s
 	// Gunakan nama file asli sebagai kunci objek
 	objectKey := file.Filename
 
-	// Lakukan operasi PutObject untuk menyimpan file ke dalam bucket
+	// Baca beberapa byte dari file untuk mendeteksi tipe konten
+	buffer := make([]byte, 512)
+	_, err = src.Read(buffer)
+	if err != nil {
+		return "", fmt.Errorf("gagal membaca file: %v", err)
+	}
+	contentType := http.DetectContentType(buffer)
+
+	// Lakukan operasi PutObject untuk menyimpan file ke dalam bucket dengan tipe konten yang tepat
 	_, err = s3Client.PutObject(context.Background(), &s3.PutObjectInput{
-		Bucket: aws.String(bucketName),
-		Key:    aws.String(objectKey),
-		Body:   src,
+		Bucket:      aws.String(bucketName),
+		Key:         aws.String(objectKey),
+		Body:        src,
+		ContentType: aws.String(contentType),
 	})
 	if err != nil {
 		return "", fmt.Errorf("gagal mengunggah file ke S3: %v", err)
