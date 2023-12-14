@@ -26,6 +26,7 @@ func S3Client(c Config) (*s3.Client, error) {
 	cfg, err := awsConfig.LoadDefaultConfig(context.TODO(),
 		awsConfig.WithEndpointResolverWithOptions(r2Resolver),
 		awsConfig.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(c.AccessKeyID, c.SecretAccessKey, "")),
+		awsConfig.WithRegion("ap-jkt-1"), // Ganti dengan region yang sesuai
 	)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load AWS config: %w", err)
