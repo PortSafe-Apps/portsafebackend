@@ -13,7 +13,6 @@ import (
 	awsConfig "github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
-	"github.com/google/uuid"
 )
 
 // S3Client mengembalikan klien S3 baru untuk konfigurasi R2 yang diberikan.
@@ -58,7 +57,7 @@ func SaveUploadedFile(file *multipart.FileHeader, bucketName string, s3Client *s
 	defer src.Close()
 
 	// Buat UUID baru untuk kunci objek
-	objectKey := uuid.New().String() + "_" + file.Filename
+	objectKey := file.Filename
 
 	// Lakukan operasi PutObject untuk menyimpan file ke dalam bucket
 	_, err = s3Client.PutObject(context.Background(), &s3.PutObjectInput{
