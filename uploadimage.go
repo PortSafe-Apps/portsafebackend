@@ -7,6 +7,7 @@ import (
 	"mime/multipart"
 	"net/http"
 	"os"
+	"path/filepath"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsConfig "github.com/aws/aws-sdk-go-v2/config"
@@ -35,11 +36,24 @@ func S3Client(c Config) (*s3.Client, error) {
 	return s3.NewFromConfig(cfg), nil
 }
 
+func getContentType(file *multipart.FileHeader) string {
+	switch fileExt := filepath.Ext(file.Filename); fileExt {
+	case ".jpg", ".jpeg":
+		return "image/jpeg"
+	case ".png":
+		return "image/png"
+	case ".gif":
+		return "image/gif"
+	default:
+		return "application/octet-stream"
+	}
+}
+
 // SaveUploadedFile menyimpan file ke R2 menggunakan metode tertentu
-func SaveUploadedFile(file *multipart.FileHeader, bucketName string, s3Client *s3.Client) error {
+func SaveUploadedFile(file *multipart.FileHeader, bucketName string, s3Client *s3.Client) (string, error) {
 	src, err := file.Open()
 	if err != nil {
-		return fmt.Errorf("failed to open file: %v", err)
+		return "", fmt.Errorf("failed to open file: %v", err)
 	}
 	defer src.Close()
 
@@ -48,16 +62,21 @@ func SaveUploadedFile(file *multipart.FileHeader, bucketName string, s3Client *s
 
 	// Lakukan operasi PutObject untuk menyimpan file ke dalam bucket
 	_, err = s3Client.PutObject(context.Background(), &s3.PutObjectInput{
-		Bucket: aws.String(bucketName),
-		Key:    aws.String(objectKey),
-		Body:   src,
+		Bucket:      aws.String(bucketName),
+		Key:         aws.String(objectKey),
+		Body:        src,
+		ContentType: aws.String(getContentType(file)), // Menentukan Content-Type
+		ACL:         "public-read",                    // Mengizinkan akses publik
 	})
 	if err != nil {
-		return fmt.Errorf("failed to upload file to S3: %v", err)
+		return "", fmt.Errorf("failed to upload file to S3: %v", err)
 	}
 
 	log.Printf("File %s berhasil diunggah ke R2 bucket: %s\n", file.Filename, objectKey)
-	return nil
+
+	// Mengembalikan public URL dari objek yang diunggah
+	publicURL := fmt.Sprintf("https://pub-%s.r2.dev/%s", "8272743a4e6c405bae724a6a667159a2", objectKey)
+	return publicURL, nil
 }
 
 // UploadFileHandler menangani permintaan pengunggahan file
@@ -104,12 +123,12 @@ func UploadFileHandler(w http.ResponseWriter, r *http.Request) {
 	defer file.Close()
 
 	// Simpan file ke R2
-	err = SaveUploadedFile(handler, bucketName, s3Client)
+	publicURL, err := SaveUploadedFile(handler, bucketName, s3Client)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Gagal menyimpan file: %v", err), http.StatusInternalServerError)
 		return
 	}
 
 	// Proses tambahan (opsional)
-	fmt.Fprintf(w, "File %s berhasil diunggah ke R2 bucket!\n", handler.Filename)
+	fmt.Fprintf(w, "File %s berhasil diunggah ke R2 bucket! URL publik: %s\n", handler.Filename, publicURL)
 }
