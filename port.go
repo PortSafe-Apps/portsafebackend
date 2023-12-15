@@ -28,7 +28,7 @@ func Register(Mongoenv, dbname string, r *http.Request) string {
 		if err != nil {
 			resp.Message = "Gagal Hash Password" + err.Error()
 		}
-		InsertUserdata(conn, userdata.Nipp, userdata.Nama, userdata.Jabatan, userdata.Divisi, userdata.Bidang, hash, userdata.Role)
+		InsertUserdata(conn, userdata.Nipp, userdata.Nama, userdata.Jabatan, hash, userdata.Role)
 		resp.Message = "Berhasil Input data"
 	}
 	response := GCFReturnStruct(resp)
@@ -222,8 +222,6 @@ func InsertDataReport(Publickey, MongoEnv, dbname, colname string, r *http.Reque
 							Nipp:    datauser.Nipp,
 							Nama:    datauser.Nama,
 							Jabatan: datauser.Jabatan,
-							Divisi:  datauser.Divisi,
-							Bidang:  datauser.Bidang,
 						},
 						Location: Location{
 							LocationId:   location.LocationId,
@@ -297,8 +295,6 @@ func UpdateDataReport(Publickey, MongoEnv, dbname, colname string, r *http.Reque
 							Nipp:    datauser.Nipp,
 							Nama:    datauser.Nama,
 							Jabatan: datauser.Jabatan,
-							Divisi:  datauser.Divisi,
-							Bidang:  datauser.Bidang,
 						},
 						Location: Location{
 							LocationId:   resp.Location.LocationId,

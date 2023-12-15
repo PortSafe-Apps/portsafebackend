@@ -8,8 +8,6 @@ type User struct {
 	Nipp     string `json:"nipp" bson:"nipp"`
 	Nama     string `json:"nama" bson:"nama"`
 	Jabatan  string `json:"jabatan" bson:"jabatan"`
-	Divisi   string `json:"divisi" bson:"divisi"`
-	Bidang   string `json:"bidang" bson:"bidang"`
 	Password string `json:"password" bson:"password"`
 	Role     string `json:"role,omitempty" bson:"role,omitempty"`
 }

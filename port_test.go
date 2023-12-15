@@ -68,7 +68,7 @@ func TestInsertUserdata(t *testing.T) {
 	conn := SetConnection("MONGOULBI", "portsafedb")
 	password, err := HashPassword("portsafe")
 	fmt.Println("err", err)
-	data := InsertUserdata(conn, "admin123", "silvi", "admin utama", "master data", "admin", password, "user")
+	data := InsertUserdata(conn, "admin123", "silvi", "admin utama", password, "user")
 	fmt.Println(data)
 }
 

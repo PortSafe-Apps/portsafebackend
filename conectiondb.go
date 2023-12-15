@@ -38,13 +38,11 @@ func GetOneUser(MongoConn *mongo.Database, colname string, userdata User) User {
 	return data
 }
 
-func InsertUserdata(MongoConn *mongo.Database, nipp, nama, jabatan, divisi, bidang, password, role string) (InsertedID interface{}) {
+func InsertUserdata(MongoConn *mongo.Database, nipp, nama, jabatan, password, role string) (InsertedID interface{}) {
 	req := new(User)
 	req.Nipp = nipp
 	req.Nama = nama
 	req.Jabatan = jabatan
-	req.Divisi = divisi
-	req.Bidang = bidang
 	req.Password = password
 	req.Role = role
 	return InsertOneDoc(MongoConn, "user", req)
