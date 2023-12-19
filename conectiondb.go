@@ -135,7 +135,6 @@ func InsertReport(MongoConn *mongo.Database, colname string, rpt Report) (Insert
 	req.Area = rpt.Area
 	req.ImmediateAction = rpt.ImmediateAction
 	req.ImprovementPhoto = rpt.ImprovementPhoto
-	req.CorrectiveAction = rpt.CorrectiveAction
 	return InsertOneDoc(MongoConn, colname, req)
 }
 

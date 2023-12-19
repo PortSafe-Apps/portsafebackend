@@ -236,7 +236,6 @@ func InsertDataReport(Publickey, MongoEnv, dbname, colname string, r *http.Reque
 						},
 						ImmediateAction:  req.ImmediateAction,
 						ImprovementPhoto: req.ImprovementPhoto,
-						CorrectiveAction: req.CorrectiveAction,
 					})
 
 					resp.Status = true
@@ -309,7 +308,6 @@ func UpdateDataReport(Publickey, MongoEnv, dbname, colname string, r *http.Reque
 						},
 						ImmediateAction:  resp.ImmediateAction,
 						ImprovementPhoto: resp.ImprovementPhoto,
-						CorrectiveAction: resp.CorrectiveAction,
 					})
 
 					if err != nil {

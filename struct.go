@@ -59,7 +59,6 @@ type Report struct {
 	Area                 Area                   `json:"area" bson:"area"`
 	ImmediateAction      string                 `json:"immediateAction" bson:"immediateAction"`
 	ImprovementPhoto     string                 `json:"improvementPhoto" bson:"improvementPhoto"`
-	CorrectiveAction     string                 `json:"correctiveAction" bson:"correctiveAction"`
 }
 
 type TypeDangerousActions struct {
