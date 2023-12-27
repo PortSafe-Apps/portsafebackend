@@ -494,47 +494,30 @@ func DeleteDataReport(PublicKey, MongoEnv, dbname, colname string, r *http.Reque
 		req.Status = false
 		req.Message = "Header Login Not Found"
 	} else {
-		checkadmin := IsAdmin(tokenlogin, os.Getenv(PublicKey))
-		checkUser := IsUser(tokenlogin, os.Getenv(PublicKey))
-
-		if checkadmin || checkUser {
-			_, err := DecodeGetUser(os.Getenv(PublicKey), tokenlogin)
+		_, err := DecodeGetUser(os.Getenv(PublicKey), tokenlogin)
+		if err != nil {
+			req.Status = false
+			req.Message = "Tidak ada data User: " + tokenlogin
+		} else {
+			err := json.NewDecoder(r.Body).Decode(&resp)
 			if err != nil {
 				req.Status = false
-				req.Message = "Tidak ada data User: " + tokenlogin
+				req.Message = "Error parsing application/json: " + err.Error()
 			} else {
-				err := json.NewDecoder(r.Body).Decode(&resp)
+				if resp.Reportid == "" {
+					req.Status = false
+					req.Message = "Reportid tidak valid"
+					return GCFReturnStruct(req)
+				}
+				_, err := DeleteReportData(conn, colname, resp.Reportid)
 				if err != nil {
 					req.Status = false
-					req.Message = "Error parsing application/json: " + err.Error()
+					req.Message = "Error deleting report data: " + err.Error()
 				} else {
-					// Hapus blok perbandingan Nipp yang tidak diperlukan
-					if resp.Reportid == "" {
-						req.Status = false
-						req.Message = "Reportid tidak valid"
-						return GCFReturnStruct(req)
-					}
-
-					// Check if the user is the owner of the report or an admin
-					if resp.Reportid == tokenlogin || IsUser(tokenlogin, os.Getenv(PublicKey)) {
-						// Delete report data from the "reporting" collection
-						_, err := DeleteReportData(conn, colname, resp.Reportid)
-						if err != nil {
-							req.Status = false
-							req.Message = "Error deleting report data: " + err.Error()
-						} else {
-							req.Status = true
-							req.Message = "Berhasil menghapus data report dengan ID: " + resp.Reportid
-						}
-					} else {
-						req.Status = false
-						req.Message = "Anda tidak diizinkan mengakses atau menghapus data ini"
-					}
+					req.Status = true
+					req.Message = "Berhasil menghapus data report dengan ID: " + resp.Reportid
 				}
 			}
-		} else {
-			req.Status = false
-			req.Message = "Anda tidak memiliki izin untuk mengakses data"
 		}
 	}
 
