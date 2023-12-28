@@ -149,7 +149,7 @@ func DeleteUserforAdmin(Mongoenv, publickey, dbname, colname string, r *http.Req
 	tokenlogin := r.Header.Get("Login")
 	if tokenlogin == "" {
 		resp.Status = fiber.StatusBadRequest
-		resp.Message = "Token login tidak ada"
+		resp.Message = "Header Login Not Found"
 	} else {
 		checkadmin := IsAdmin(tokenlogin, os.Getenv(publickey))
 		if !checkadmin {
@@ -170,12 +170,13 @@ func DeleteUserforAdmin(Mongoenv, publickey, dbname, colname string, r *http.Req
 
 func ResetPassword(MongoEnv, publickey, dbname, colname string, r *http.Request) string {
 	resp := new(Cred)
-	req := new(User)
+	req := new(rstUsers)
 	conn := SetConnection(MongoEnv, dbname)
 	tokenlogin := r.Header.Get("Login")
+
 	if tokenlogin == "" {
 		resp.Status = fiber.StatusBadRequest
-		resp.Message = "Token login tidak ada"
+		resp.Message = "Header Login Not Found"
 	} else {
 		checkadmin := IsAdmin(tokenlogin, os.Getenv(publickey))
 		if !checkadmin {

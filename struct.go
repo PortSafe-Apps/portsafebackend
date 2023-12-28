@@ -128,6 +128,11 @@ type ReqUsers struct {
 	Nipp string `json:"nipp"`
 }
 
+type rstUsers struct {
+	Nipp     string `json:"nipp"`
+	Password string `json:"password"`
+}
+
 type RequestReport struct {
 	Reportid string `json:"reportid"`
 }
