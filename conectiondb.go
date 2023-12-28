@@ -53,13 +53,20 @@ func InsertOneDoc(db *mongo.Database, collection string, doc interface{}) (inser
 	return insertResult.InsertedID
 }
 
-func InsertUserdata(MongoConn *mongo.Database, nipp, nama, jabatan, password, role string) (InsertedID interface{}) {
+func InsertUserdata(MongoConn *mongo.Database, nipp, nama, jabatan, location, password, role string) (InsertedID interface{}) {
 	req := new(User)
 	req.Nipp = nipp
 	req.Nama = nama
 	req.Jabatan = jabatan
+	loc := GetLocationByName(MongoConn, location)
+	if loc != nil {
+		req.Location = *loc
+	} else {
+		req.Location = Location{}
+	}
 	req.Password = password
 	req.Role = role
+
 	return InsertOneDoc(MongoConn, "user", req)
 }
 

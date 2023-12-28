@@ -28,13 +28,20 @@ func Register(Mongoenv, dbname string, r *http.Request) string {
 		hash, err := HashPassword(userdata.Password)
 		if err != nil {
 			resp.Message = "Gagal Hash Password" + err.Error()
+		} else {
+			loc := GetLocationByName(conn, userdata.Location.LocationName)
+			if loc != nil {
+				userdata.Location = *loc
+				InsertUserdata(conn, userdata.Nipp, userdata.Nama, userdata.Jabatan, userdata.Location.LocationName, hash, userdata.Role)
+				resp.Message = "Berhasil Input data"
+			} else {
+				resp.Status = false
+				resp.Message = "Lokasi tidak ditemukan"
+			}
 		}
-		InsertUserdata(conn, userdata.Nipp, userdata.Nama, userdata.Jabatan, hash, userdata.Role)
-		resp.Message = "Berhasil Input data"
 	}
 	response := GCFReturnStruct(resp)
 	return response
-
 }
 
 func Login(Privatekey, MongoEnv, dbname, Colname string, r *http.Request) string {
