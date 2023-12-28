@@ -734,7 +734,10 @@ func InsertCompromisedAction(Publickey, MongoEnv, dbname, colname string, r *htt
 						ObservationPhoto:     req.ObservationPhoto,
 						TypeDangerousActions: selectedTypeDangerousActions,
 						ImmediateAction:      req.ImmediateAction,
+						ImprovementPhoto:     req.ImprovementPhoto,
 						Recomendation:        req.Recomendation,
+						ActionDesc:           req.ActionDesc,
+						EvidencePhoto:        req.EvidencePhoto,
 						Status:               "Opened",
 					})
 
@@ -801,6 +804,7 @@ func FollowUpCompromisedAction(Publickey, MongoEnv, dbname, colname string, r *h
 						ObservationPhoto:     resp.ObservationPhoto,
 						TypeDangerousActions: resp.TypeDangerousActions,
 						ImmediateAction:      resp.ImmediateAction,
+						ImprovementPhoto:     resp.ImprovementPhoto,
 						Recomendation:        resp.Recomendation,
 						ActionDesc:           resp.ActionDesc,
 						EvidencePhoto:        resp.EvidencePhoto,

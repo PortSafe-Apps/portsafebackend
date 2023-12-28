@@ -264,7 +264,11 @@ func InsertReportCompromised(MongoConn *mongo.Database, colname string, rpt Repo
 	req.ObservationPhoto = rpt.ObservationPhoto
 	req.TypeDangerousActions = rpt.TypeDangerousActions
 	req.ImmediateAction = rpt.ImmediateAction
+	req.ImprovementPhoto = rpt.ImprovementPhoto
 	req.Recomendation = rpt.Recomendation
+	req.ActionDesc = rpt.ActionDesc
+	req.ImprovementPhoto = rpt.ImprovementPhoto
+	req.EvidencePhoto = rpt.EvidencePhoto
 	req.Status = rpt.Status
 	return InsertOneDoc(MongoConn, colname, req)
 }

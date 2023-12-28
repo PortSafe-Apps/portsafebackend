@@ -72,6 +72,7 @@ type ReportCompromisedAction struct {
 	ObservationPhoto     string                 `json:"observationPhoto"`
 	TypeDangerousActions []TypeDangerousActions `json:"typeDangerousActions" bson:"typeDangerousActions,omitempty"`
 	ImmediateAction      string                 `json:"immediateAction" bson:"immediateAction"`
+	ImprovementPhoto     string                 `json:"improvementPhoto" bson:"improvementPhoto"`
 	Recomendation        string                 `json:"recomendation"`
 	ActionDesc           string                 `json:"ActionDesc"`
 	EvidencePhoto        string                 `json:"EvidencePhoto"`
