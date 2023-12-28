@@ -752,7 +752,6 @@ func InsertCompromisedAction(Publickey, MongoEnv, dbname, colname string, r *htt
 	return GCFReturnStruct(resp)
 }
 
-// Fungsi untuk tindak lanjut oleh admin pada laporan kondisi berbahaya (unsafe condition)
 func FollowUpCompromisedAction(Publickey, MongoEnv, dbname, colname string, r *http.Request) string {
 	req := new(Credential)
 	resp := new(ReportCompromisedAction)
@@ -778,40 +777,42 @@ func FollowUpCompromisedAction(Publickey, MongoEnv, dbname, colname string, r *h
 					req.Message = "Token tidak berisi informasi user yang valid"
 					return GCFReturnStruct(req)
 				}
+
 				datauser, err := GetUserByNipp(conn, checktoken)
 				if err != nil {
 					req.Status = false
 					req.Message = "Error retrieving user information: " + err.Error()
 					return GCFReturnStruct(req)
 				}
-				if IsAdmin(tokenlogin, os.Getenv(Publickey)) {
-					_, err := UpdateReportCompromised(conn, context.Background(), ReportCompromisedAction{
-						Reportid: resp.Reportid,
-						Date:     resp.Date,
-						User: User{
-							Nipp:    datauser.Nipp,
-							Nama:    datauser.Nama,
-							Jabatan: datauser.Jabatan,
-						},
-						Location: Location{
-							LocationId:   resp.Location.LocationId,
-							LocationName: resp.Location.LocationName,
-						},
-						Area: Area{
-							AreaId:   resp.Area.AreaId,
-							AreaName: resp.Area.AreaName,
-						},
-						Description:          resp.Description,
-						ObservationPhoto:     resp.ObservationPhoto,
-						TypeDangerousActions: resp.TypeDangerousActions,
-						ImmediateAction:      resp.ImmediateAction,
-						ImprovementPhoto:     resp.ImprovementPhoto,
-						Recomendation:        resp.Recomendation,
-						ActionDesc:           resp.ActionDesc,
-						EvidencePhoto:        resp.EvidencePhoto,
-						Status:               "Closed",
-					})
 
+				if IsAdmin(tokenlogin, os.Getenv(Publickey)) {
+					existingReport := GetReportCompromisedByID(conn, resp.Reportid)
+					if existingReport == nil {
+						req.Status = false
+						req.Message = "Error retrieving existing report data"
+						return GCFReturnStruct(req)
+					}
+
+					existingReport.User = User{
+						Nipp:    datauser.Nipp,
+						Nama:    datauser.Nama,
+						Jabatan: datauser.Jabatan,
+					}
+
+					existingReport.Date = resp.Date
+					existingReport.Location = resp.Location
+					existingReport.Area = resp.Area
+					existingReport.Description = resp.Description
+					existingReport.ObservationPhoto = resp.ObservationPhoto
+					existingReport.TypeDangerousActions = resp.TypeDangerousActions
+					existingReport.ImmediateAction = resp.ImmediateAction
+					existingReport.ImprovementPhoto = resp.ImprovementPhoto
+					existingReport.Recomendation = resp.Recomendation
+					existingReport.ActionDesc = resp.ActionDesc
+					existingReport.EvidencePhoto = resp.EvidencePhoto
+					existingReport.Status = "Closed"
+
+					_, err := UpdateReportCompromised(conn, context.Background(), colname, *existingReport)
 					if err != nil {
 						req.Status = false
 						req.Message = "Error updating report data: " + err.Error()
