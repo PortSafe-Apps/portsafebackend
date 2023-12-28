@@ -235,7 +235,7 @@ func GetAllCompromisedActionDataByUser(conn *mongo.Database, colname, nipp strin
 }
 
 func GetReportCompromisedByID(MongoConn *mongo.Database, reportID string) *ReportCompromisedAction {
-	collection := MongoConn.Collection("reportingUnsafeCompromised")
+	collection := MongoConn.Collection("reportingCompromised")
 	filter := bson.M{"reportid": reportID}
 
 	var report ReportCompromisedAction
