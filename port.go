@@ -778,13 +778,6 @@ func FollowUpCompromisedAction(Publickey, MongoEnv, dbname, colname string, r *h
 					return GCFReturnStruct(req)
 				}
 
-				datauser, err := GetUserByNipp(conn, checktoken)
-				if err != nil {
-					req.Status = false
-					req.Message = "Error retrieving user information: " + err.Error()
-					return GCFReturnStruct(req)
-				}
-
 				if IsAdmin(tokenlogin, os.Getenv(Publickey)) {
 					existingReport := GetReportCompromisedByID(conn, resp.Reportid)
 					if existingReport == nil {
@@ -793,13 +786,8 @@ func FollowUpCompromisedAction(Publickey, MongoEnv, dbname, colname string, r *h
 						return GCFReturnStruct(req)
 					}
 
-					existingReport.User = User{
-						Nipp:    datauser.Nipp,
-						Nama:    datauser.Nama,
-						Jabatan: datauser.Jabatan,
-					}
-
 					existingReport.Date = resp.Date
+					existingReport.User = resp.User
 					existingReport.Location = resp.Location
 					existingReport.Area = resp.Area
 					existingReport.Description = resp.Description
@@ -831,7 +819,6 @@ func FollowUpCompromisedAction(Publickey, MongoEnv, dbname, colname string, r *h
 	return GCFReturnStruct(req)
 }
 
-// Fungsi untuk menghapus satu data compromised action (compromised action) berdasarkan ID
 func DeleteCompromisedActionData(PublicKey, MongoEnv, dbname, colname string, r *http.Request) string {
 	req := new(Credential)
 	resp := new(RequestReportCompromisedAction)

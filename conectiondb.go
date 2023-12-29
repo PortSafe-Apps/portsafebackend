@@ -273,10 +273,9 @@ func InsertReportCompromised(MongoConn *mongo.Database, colname string, rpt Repo
 	return InsertOneDoc(MongoConn, colname, req)
 }
 
-// Fungsi untuk mengubah status laporan kondisi berbahaya dan menyimpan tindak lanjut
 func UpdateReportCompromised(Mongoconn *mongo.Database, ctx context.Context, colname string, rpt ReportCompromisedAction) (UpdateId interface{}, err error) {
 	filter := bson.D{{Key: "reportid", Value: rpt.Reportid}}
-	res, err := Mongoconn.Collection("reportingCompromised").ReplaceOne(ctx, filter, rpt)
+	res, err := Mongoconn.Collection(colname).ReplaceOne(ctx, filter, rpt)
 	if err != nil {
 		return nil, err
 	}
