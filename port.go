@@ -787,7 +787,6 @@ func FollowUpCompromisedAction(Publickey, MongoEnv, dbname, colname string, r *h
 					}
 
 					existingReport.Date = resp.Date
-					existingReport.User = resp.User
 					existingReport.Location = resp.Location
 					existingReport.Area = resp.Area
 					existingReport.Description = resp.Description
