@@ -52,6 +52,7 @@ type ResponseBack struct {
 type ReportUnsafeAction struct {
 	Reportid             string                 `json:"reportid" bson:"reportid"`
 	Date                 string                 `json:"date" bson:"date"`
+	Time                 string                 `json:"time" bson:"time"`
 	User                 User                   `json:"user" bson:"user,omitempty"`
 	Location             Location               `json:"location" bson:"location"`
 	Description          string                 `json:"description" bson:"description"`
@@ -65,6 +66,7 @@ type ReportUnsafeAction struct {
 type ReportCompromisedAction struct {
 	Reportid             string                 `json:"reportid"`
 	Date                 string                 `json:"date"`
+	Time                 string                 `json:"time" bson:"time"`
 	User                 User                   `json:"user"`
 	Location             Location               `json:"location"`
 	Area                 Area                   `json:"area"`

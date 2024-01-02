@@ -384,6 +384,7 @@ func InsertReportUnsafeAction(Publickey, MongoEnv, dbname, colname string, r *ht
 					InsertReportAction(conn, colname, ReportUnsafeAction{
 						Reportid: req.Reportid,
 						Date:     req.Date,
+						Time:     req.Time,
 						User: User{
 							Nipp:    datauser.Nipp,
 							Nama:    datauser.Nama,
@@ -456,6 +457,7 @@ func UpdateReportUnsafeAction(Publickey, MongoEnv, dbname, colname string, r *ht
 					_, err := UpdateReportAction(conn, context.Background(), ReportUnsafeAction{
 						Reportid: resp.Reportid,
 						Date:     resp.Date,
+						Time:     resp.Time,
 						User: User{
 							Nipp:    datauser.Nipp,
 							Nama:    datauser.Nama,
@@ -718,6 +720,7 @@ func InsertCompromisedAction(Publickey, MongoEnv, dbname, colname string, r *htt
 					InsertReportCompromised(conn, colname, ReportCompromisedAction{
 						Reportid: req.Reportid,
 						Date:     req.Date,
+						Time:     req.Time,
 						User: User{
 							Nipp:    datauser.Nipp,
 							Nama:    datauser.Nama,
@@ -787,6 +790,7 @@ func FollowUpCompromisedAction(Publickey, MongoEnv, dbname, colname string, r *h
 					}
 
 					existingReport.Date = resp.Date
+					existingReport.Time = resp.Time
 					existingReport.Location = resp.Location
 					existingReport.Area = resp.Area
 					existingReport.Description = resp.Description

@@ -175,6 +175,7 @@ func InsertReportAction(MongoConn *mongo.Database, colname string, rpt ReportUns
 	req := new(ReportUnsafeAction)
 	req.Reportid = rpt.Reportid
 	req.Date = rpt.Date
+	req.Time = rpt.Time
 	req.User = rpt.User
 	req.Location = rpt.Location
 	req.Area = rpt.Area
@@ -257,6 +258,7 @@ func InsertReportCompromised(MongoConn *mongo.Database, colname string, rpt Repo
 	req := new(ReportCompromisedAction)
 	req.Reportid = rpt.Reportid
 	req.Date = rpt.Date
+	req.Time = rpt.Time
 	req.User = rpt.User
 	req.Location = rpt.Location
 	req.Area = rpt.Area
