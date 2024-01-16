@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/aiteung/atdb"
 	"go.mongodb.org/mongo-driver/bson"
@@ -66,6 +67,7 @@ func InsertUserdata(MongoConn *mongo.Database, nipp, nama, jabatan, location, pa
 	}
 	req.Password = password
 	req.Role = role
+	req.Timestamp = time.Now()
 
 	return InsertOneDoc(MongoConn, "user", req)
 }
