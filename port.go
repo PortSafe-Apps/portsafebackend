@@ -289,7 +289,7 @@ func GetAllReport(PublicKey, Mongoenv, dbname, colname string, r *http.Request) 
 		} else {
 			datauser := GetAllReportData(conn, colname)
 			req.Status = fiber.StatusOK
-			req.Message = "data User berhasil diambil"
+			req.Message = "data unsafe action berhasil diambil"
 			req.Data = datauser
 		}
 	}
