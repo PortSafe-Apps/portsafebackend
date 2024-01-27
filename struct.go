@@ -132,8 +132,11 @@ type ReqUsers struct {
 }
 
 type rstUsers struct {
-	Nipp     string `json:"nipp"`
-	Password string `json:"password"`
+	Nipp     string   `json:"nipp"`
+	Nama     string   `json:"nama" bson:"nama"`
+	Jabatan  string   `json:"jabatan" bson:"jabatan"`
+	Location Location `json:"location"`
+	Password string   `json:"password"`
 }
 
 type RequestReport struct {

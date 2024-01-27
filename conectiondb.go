@@ -72,8 +72,8 @@ func InsertUserdata(MongoConn *mongo.Database, nipp, nama, jabatan, location, pa
 	return InsertOneDoc(MongoConn, "user", req)
 }
 
-func DeleteUser(Mongoconn *mongo.Database, colname, nipp string) (deleted interface{}, err error) {
-	filter := bson.M{"nipp": nipp}
+func DeleteUser(Mongoconn *mongo.Database, colname, Nipp string) (deleted interface{}, err error) {
+	filter := bson.M{"nipp": Nipp}
 	data := atdb.DeleteOneDoc(Mongoconn, colname, filter)
 	return data, err
 }
@@ -85,16 +85,30 @@ func PasswordValidator(MongoConn *mongo.Database, colname string, userdata User)
 	return hashChecker
 }
 
-func UpdatePassword(mongoconn *mongo.Database, user User) (Updatedid interface{}) {
+func UpdateUser(mongoconn *mongo.Database, user User) (Updatedid interface{}) {
 	filter := bson.D{{Key: "nipp", Value: user.Nipp}}
+
 	pass, _ := HashPassword(user.Password)
-	update := bson.D{{Key: "$Set", Value: bson.D{
-		{Key: "password", Value: pass},
-	}}}
+
+	location := GetLocationByName(mongoconn, user.Location.LocationName)
+	if location == nil {
+		return "gagal update data: location not found"
+	}
+
+	update := bson.D{
+		{Key: "$Set", Value: bson.D{
+			{Key: "nama", Value: user.Nama},
+			{Key: "jabatan", Value: user.Jabatan},
+			{Key: "location.locationName", Value: user.Location.LocationName},
+			{Key: "password", Value: pass},
+		}},
+	}
+
 	res, err := mongoconn.Collection("user").UpdateOne(context.Background(), filter, update)
 	if err != nil {
 		return "gagal update data"
 	}
+
 	return res
 }
 

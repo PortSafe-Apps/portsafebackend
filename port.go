@@ -172,29 +172,51 @@ func DeleteUserforAdmin(Mongoenv, publickey, dbname, colname string, r *http.Req
 	return GCFReturnStruct(resp)
 }
 
-func ResetPassword(MongoEnv, publickey, dbname, colname string, r *http.Request) string {
+func ResetPassword(mongoEnv, publickey, dbname, colname string, r *http.Request) string {
 	resp := new(Cred)
 	req := new(rstUsers)
-	conn := SetConnection(MongoEnv, dbname)
-	tokenlogin := r.Header.Get("Login")
 
-	if tokenlogin == "" {
+	// Set up the MongoDB connection
+	conn := SetConnection(mongoEnv, dbname)
+
+	// Retrieve the token from the header
+	tokenLogin := r.Header.Get("Login")
+
+	if tokenLogin == "" {
 		resp.Status = fiber.StatusBadRequest
 		resp.Message = "Header Login Not Found"
-	} else {
-		checkadmin := IsAdmin(tokenlogin, os.Getenv(publickey))
-		if !checkadmin {
-			resp.Status = fiber.StatusInternalServerError
-			resp.Message = "kamu bukan admin"
-		} else {
-			UpdatePassword(conn, User{
-				Nipp:     req.Nipp,
-				Password: req.Password,
-			})
-			resp.Status = fiber.StatusOK
-			resp.Message = "Berhasil reset password"
-		}
+		return GCFReturnStruct(resp)
 	}
+
+	// Retrieve the public key
+	publicKey := os.Getenv(publickey)
+
+	// Check if the user is an admin
+	if !IsAdmin(tokenLogin, publicKey) {
+		resp.Status = fiber.StatusInternalServerError
+		resp.Message = "Kamu bukan admin"
+		return GCFReturnStruct(resp)
+	}
+
+	// Retrieve the location from the request and check if it exists
+	location := GetLocationByName(conn, req.Location.LocationName)
+	if location == nil {
+		resp.Status = fiber.StatusNotFound
+		resp.Message = "Lokasi tidak ditemukan"
+		return GCFReturnStruct(resp)
+	}
+
+	// Update user information (nama, jabatan, locationName, password)
+	UpdateUser(conn, User{
+		Nipp:     req.Nipp,
+		Password: req.Password,
+		Nama:     req.Nama,
+		Jabatan:  req.Jabatan,
+		Location: Location{LocationName: req.Location.LocationName},
+	})
+
+	resp.Status = fiber.StatusOK
+	resp.Message = "Berhasil reset password dan update informasi pengguna"
 	return GCFReturnStruct(resp)
 }
 
