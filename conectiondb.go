@@ -3,7 +3,6 @@ package port
 import (
 	"context"
 	"fmt"
-	"os"
 	"time"
 
 	"github.com/aiteung/atdb"
@@ -13,7 +12,7 @@ import (
 
 func SetConnection(MongoString, dbname string) *mongo.Database {
 	MongoInfo := atdb.DBInfo{
-		DBString: os.Getenv(MongoString),
+		DBString: MongoString,
 		DBName:   dbname,
 	}
 	conn := atdb.MongoConnect(MongoInfo)
