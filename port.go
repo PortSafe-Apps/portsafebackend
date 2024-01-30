@@ -182,47 +182,39 @@ func DeleteUserAdmin(PublicKey, MongoEnv, dbname, colname string, r *http.Reques
 	return GCFReturnStruct(resp)
 }
 
-func ResetPassword(mongoEnv, publickey, dbname, colname string, r *http.Request) string {
+func UpdateUserAdmin(MongoEnv, publickey, dbname, colname string, r *http.Request) string {
 	resp := new(Cred)
 	req := new(rstUsers)
-	conn := SetConnection(mongoEnv, dbname)
+	conn := SetConnection(MongoEnv, dbname)
 	tokenlogin := r.Header.Get("Login")
-
 	if tokenlogin == "" {
 		resp.Status = fiber.StatusBadRequest
 		resp.Message = "Token login tidak ada"
 	} else {
-		err := json.NewDecoder(r.Body).Decode(&req)
-		if err != nil {
-			resp.Message = "error parsing application/json: " + err.Error()
-			checkadmin := IsAdmin(tokenlogin, os.Getenv(publickey))
-			if !checkadmin {
-				resp.Status = fiber.StatusInternalServerError
-				resp.Message = "kamu bukan admin"
-			} else {
-				// Retrieve the location from the request and check if it exists
-				location := GetLocationByName(conn, req.Location.LocationName)
-				if location == nil {
-					resp.Status = fiber.StatusNotFound
-					resp.Message = "Lokasi tidak ditemukan"
-					return GCFReturnStruct(resp)
-				}
-
-				// Update user information (nama, jabatan, locationName, password)
-				UpdateUser(conn, User{
-					Nipp:     req.Nipp,
-					Password: req.Password,
-					Nama:     req.Nama,
-					Jabatan:  req.Jabatan,
-					Location: Location{LocationName: req.Location.LocationName},
-				})
-
-				resp.Status = fiber.StatusOK
-				resp.Message = "Berhasil reset password dan update informasi pengguna"
+		checkadmin := IsAdmin(tokenlogin, os.Getenv(publickey))
+		if !checkadmin {
+			resp.Status = fiber.StatusInternalServerError
+			resp.Message = "kamu bukan admin"
+		} else {
+			// Retrieve the location from the request and check if it exists
+			location := GetLocationByName(conn, req.Location.LocationName)
+			if location == nil {
+				resp.Status = fiber.StatusNotFound
+				resp.Message = "Lokasi tidak ditemukan"
+				return GCFReturnStruct(resp)
 			}
+
+			UpdateUser(conn, User{
+				Nipp:     req.Nipp,
+				Password: req.Password,
+				Nama:     req.Nama,
+				Jabatan:  req.Jabatan,
+				Location: Location{LocationName: req.Location.LocationName},
+			})
+			resp.Status = fiber.StatusOK
+			resp.Message = "Berhasil reset password"
 		}
 	}
-
 	return GCFReturnStruct(resp)
 }
 
