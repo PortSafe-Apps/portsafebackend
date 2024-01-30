@@ -3,6 +3,7 @@ package port
 import (
 	"context"
 	"fmt"
+	"log"
 	"os"
 	"time"
 
@@ -16,8 +17,14 @@ func SetConnection(MongoString, dbname string) *mongo.Database {
 		DBString: os.Getenv(MongoString),
 		DBName:   dbname,
 	}
-	conn := atdb.MongoConnect(MongoInfo)
-	return conn
+
+	db := atdb.MongoConnect(MongoInfo)
+	if db == nil {
+		log.Fatal("Failed to connect to MongoDB")
+		return nil
+	}
+
+	return db
 }
 
 // CRUD User

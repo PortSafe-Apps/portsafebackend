@@ -145,12 +145,13 @@ func GetAllUserData(PublicKey, MongoEnv, dbname, colname string, r *http.Request
 func DeleteUserforAdmin(Mongoenv, publickey, dbname, colname string, r *http.Request) string {
 	resp := new(Cred)
 	req := new(ReqUsers)
-	conn := SetConnection(Mongoenv, dbname)
 	tokenlogin := r.Header.Get("Login")
+
 	if tokenlogin == "" {
 		resp.Status = fiber.StatusBadRequest
 		resp.Message = "Token login tidak ada"
 	} else {
+		// Move this block outside of the else statement
 		err := json.NewDecoder(r.Body).Decode(&req)
 		if err != nil {
 			resp.Message = "error parsing application/json: " + err.Error()
@@ -159,16 +160,26 @@ func DeleteUserforAdmin(Mongoenv, publickey, dbname, colname string, r *http.Req
 				resp.Status = fiber.StatusInternalServerError
 				resp.Message = "kamu bukan admin"
 			} else {
+				// Initialize the MongoDB client and database outside of this block
+				conn := SetConnection(Mongoenv, dbname)
+				// Check for connection errors
+				if conn == nil {
+					resp.Status = fiber.StatusInternalServerError
+					resp.Message = "gagal terhubung ke database"
+					return GCFReturnStruct(resp)
+				}
 				_, err := DeleteUser(conn, colname, req.Nipp)
 				if err != nil {
 					resp.Status = fiber.StatusBadRequest
 					resp.Message = "gagal hapus data"
+				} else {
+					resp.Status = fiber.StatusOK
+					resp.Message = "data berhasil dihapus"
 				}
-				resp.Status = fiber.StatusOK
-				resp.Message = "data berhasil dihapus"
 			}
 		}
 	}
+
 	return GCFReturnStruct(resp)
 }
 
