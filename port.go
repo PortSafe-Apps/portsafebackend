@@ -142,38 +142,40 @@ func GetAllUserData(PublicKey, MongoEnv, dbname, colname string, r *http.Request
 	return GCFReturnStruct(req)
 }
 
-func DeleteUserforAdmin(Mongoenv, publickey, dbname, colname string, r *http.Request) string {
+func DeleteUserAdmin(PublicKey, MongoEnv, dbname, colname string, r *http.Request) string {
 	resp := new(Cred)
 	req := new(ReqUsers)
+	conn := SetConnection(MongoEnv, dbname)
 	tokenlogin := r.Header.Get("Login")
-
 	if tokenlogin == "" {
 		resp.Status = fiber.StatusBadRequest
-		resp.Message = "Token login tidak ada"
+		resp.Message = "Header Login Not Found"
 	} else {
-		err := json.NewDecoder(r.Body).Decode(&req)
-		if err != nil {
-			resp.Message = "error parsing application/json: " + err.Error()
-			checkadmin := IsAdmin(tokenlogin, os.Getenv(publickey))
-			if !checkadmin {
+		checkadmin := IsAdmin(tokenlogin, os.Getenv(PublicKey))
+		if checkadmin {
+			checktoken, err := DecodeGetUser(os.Getenv(PublicKey), tokenlogin)
+			if err != nil {
 				resp.Status = fiber.StatusInternalServerError
-				resp.Message = "kamu bukan admin"
+				resp.Message = "Tidak ada data User: " + tokenlogin
 			} else {
-				conn := SetConnection(Mongoenv, dbname)
-				if conn == nil {
+				compared := CompareNipp(conn, colname, checktoken)
+				if !compared {
 					resp.Status = fiber.StatusInternalServerError
-					resp.Message = "gagal terhubung ke database"
-					return GCFReturnStruct(resp)
-				}
-				_, err := DeleteUser(conn, colname, req.Nipp)
-				if err != nil {
-					resp.Status = fiber.StatusBadRequest
-					resp.Message = "gagal hapus data"
+					resp.Message = "Anda Bukan Admin"
 				} else {
-					resp.Status = fiber.StatusOK
-					resp.Message = "data berhasil dihapus"
+					_, err := DeleteUser(conn, colname, req.Nipp)
+					if err != nil {
+						resp.Status = fiber.StatusInternalServerError
+						resp.Message = "Error deleting user: " + err.Error()
+					} else {
+						resp.Status = fiber.StatusOK
+						resp.Message = "Data User berhasil dihapus"
+					}
 				}
 			}
+		} else {
+			resp.Status = fiber.StatusBadRequest
+			resp.Message = "Anda tidak memiliki izin untuk mengakses data"
 		}
 	}
 
@@ -183,6 +185,7 @@ func DeleteUserforAdmin(Mongoenv, publickey, dbname, colname string, r *http.Req
 func ResetPassword(mongoEnv, publickey, dbname, colname string, r *http.Request) string {
 	resp := new(Cred)
 	req := new(rstUsers)
+	conn := SetConnection(mongoEnv, dbname)
 	tokenlogin := r.Header.Get("Login")
 
 	if tokenlogin == "" {
@@ -197,14 +200,6 @@ func ResetPassword(mongoEnv, publickey, dbname, colname string, r *http.Request)
 				resp.Status = fiber.StatusInternalServerError
 				resp.Message = "kamu bukan admin"
 			} else {
-				// Establish MongoDB connection
-				conn := SetConnection(mongoEnv, dbname)
-				if conn == nil {
-					resp.Status = fiber.StatusInternalServerError
-					resp.Message = "gagal terhubung ke database"
-					return GCFReturnStruct(resp)
-				}
-
 				// Retrieve the location from the request and check if it exists
 				location := GetLocationByName(conn, req.Location.LocationName)
 				if location == nil {
