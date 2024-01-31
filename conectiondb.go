@@ -72,9 +72,9 @@ func InsertUserdata(MongoConn *mongo.Database, nipp, nama, jabatan, location, pa
 	return InsertOneDoc(MongoConn, "user", req)
 }
 
-func DeleteUser(mongoconn *mongo.Database, colname, Nipp string) (deletedid interface{}, err error) {
-	filter := bson.M{"nipp": Nipp}
-	data := atdb.DeleteOneDoc(mongoconn, colname, filter)
+func DeleteUser(Mongoconn *mongo.Database, colname, nipp string) (deleted interface{}, err error) {
+	filter := bson.M{"nipp": nipp}
+	data := atdb.DeleteOneDoc(Mongoconn, colname, filter)
 	return data, err
 }
 
