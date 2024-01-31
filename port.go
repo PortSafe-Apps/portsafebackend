@@ -142,43 +142,33 @@ func GetAllUserData(PublicKey, MongoEnv, dbname, colname string, r *http.Request
 	return GCFReturnStruct(req)
 }
 
-func DeleteUserAdmin(PublicKey, MongoEnv, dbname, colname string, r *http.Request) string {
+func DeleteUserforAdmin(Mongoenv, publickey, dbname, colname string, r *http.Request) string {
 	resp := new(Cred)
 	req := new(ReqUsers)
-	conn := SetConnection(MongoEnv, dbname)
+	conn := SetConnection(Mongoenv, dbname)
 	tokenlogin := r.Header.Get("Login")
 	if tokenlogin == "" {
 		resp.Status = fiber.StatusBadRequest
-		resp.Message = "Header Login Not Found"
+		resp.Message = "Token login tidak ada"
 	} else {
-		checkadmin := IsAdmin(tokenlogin, os.Getenv(PublicKey))
-		if checkadmin {
-			checktoken, err := DecodeGetUser(os.Getenv(PublicKey), tokenlogin)
-			if err != nil {
+		err := json.NewDecoder(r.Body).Decode(&req)
+		if err != nil {
+			resp.Message = "error parsing application/json: " + err.Error()
+			checkadmin := IsAdmin(tokenlogin, os.Getenv(publickey))
+			if !checkadmin {
 				resp.Status = fiber.StatusInternalServerError
-				resp.Message = "Tidak ada data User: " + tokenlogin
+				resp.Message = "kamu bukan admin"
 			} else {
-				compared := CompareNipp(conn, colname, checktoken)
-				if !compared {
-					resp.Status = fiber.StatusInternalServerError
-					resp.Message = "Anda Bukan Admin"
-				} else {
-					_, err := DeleteUser(conn, colname, req.Nipp)
-					if err != nil {
-						resp.Status = fiber.StatusInternalServerError
-						resp.Message = "Error deleting user: " + err.Error()
-					} else {
-						resp.Status = fiber.StatusOK
-						resp.Message = "Data User berhasil dihapus"
-					}
+				_, err := DeleteUser(conn, colname, req.Nipp)
+				if err != nil {
+					resp.Status = fiber.StatusBadRequest
+					resp.Message = "gagal hapus data"
 				}
+				resp.Status = fiber.StatusOK
+				resp.Message = "data berhasil dihapus"
 			}
-		} else {
-			resp.Status = fiber.StatusBadRequest
-			resp.Message = "Anda tidak memiliki izin untuk mengakses data"
 		}
 	}
-
 	return GCFReturnStruct(resp)
 }
 
