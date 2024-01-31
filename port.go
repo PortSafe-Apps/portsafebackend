@@ -182,39 +182,45 @@ func DeleteDataUser(PublicKey, MongoEnv, dbname, colname string, r *http.Request
 	return GCFReturnStruct(req)
 }
 
-func UpdateUserAdmin(MongoEnv, publickey, dbname, colname string, r *http.Request) string {
-	resp := new(Cred)
+func UpdateUserAdmin(PublicKey, MongoEnv, dbname, colname string, r *http.Request) string {
+	resp := new(Credential)
 	req := new(rstUsers)
 	conn := SetConnection(MongoEnv, dbname)
 	tokenlogin := r.Header.Get("Login")
 	if tokenlogin == "" {
-		resp.Status = fiber.StatusBadRequest
-		resp.Message = "Token login tidak ada"
+		resp.Status = false
+		resp.Message = "Header Login Not Found"
 	} else {
-		checkadmin := IsAdmin(tokenlogin, os.Getenv(publickey))
-		if !checkadmin {
-			resp.Status = fiber.StatusBadRequest
-			resp.Message = "kamu bukan admin"
+		_, err := DecodeGetUser(os.Getenv(PublicKey), tokenlogin)
+		if err != nil {
+			resp.Status = false
+			resp.Message = "Tidak ada data User: " + tokenlogin
 		} else {
-			// Retrieve the location from the request and check if it exists
-			location := GetLocationByName(conn, req.Location.LocationName)
-			if location == nil {
-				resp.Status = fiber.StatusBadRequest
-				resp.Message = "Lokasi tidak ditemukan"
-				return GCFReturnStruct(resp)
-			}
+			err := json.NewDecoder(r.Body).Decode(&resp)
+			if err != nil {
+				resp.Status = false
+				resp.Message = "Error parsing application/json: " + err.Error()
+			} else {
+				// Retrieve the location from the request and check if it exists
+				location := GetLocationByName(conn, req.Location.LocationName)
+				if location == nil {
+					resp.Status = false
+					resp.Message = "Lokasi tidak ditemukan"
+					return GCFReturnStruct(resp)
+				}
 
-			UpdateUser(conn, User{
-				Nipp:    req.Nipp,
-				Jabatan: req.Jabatan,
-				Location: Location{
-					LocationId:   location.LocationId,
-					LocationName: location.LocationName,
-				},
-				Password: req.Password,
-			})
-			resp.Status = fiber.StatusOK
-			resp.Message = "Berhasil reset password"
+				UpdateUser(conn, User{
+					Nipp:    req.Nipp,
+					Jabatan: req.Jabatan,
+					Location: Location{
+						LocationId:   location.LocationId,
+						LocationName: location.LocationName,
+					},
+					Password: req.Password,
+				})
+				resp.Status = true
+				resp.Message = "Berhasil reset password"
+			}
 		}
 	}
 	return GCFReturnStruct(resp)
